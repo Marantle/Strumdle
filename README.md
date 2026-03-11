@@ -1,73 +1,55 @@
-# React + TypeScript + Vite
+# Strumdle
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A daily Guitar Hero guessing game. Watch a note chart scroll down the screen and guess which song it is. Built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+**Play at [strumdle.pages.dev](https://strumdle.pages.dev)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## How It Works
 
-## React Compiler
+Each day a new 5-second clip from a Guitar Hero chart is revealed. You get 6 guesses, and the clip extends by 2 seconds with each wrong guess. Match hints (artist, game) help narrow it down.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
 
-## Expanding the ESLint configuration
+No private data needed — a test chart is included:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev:setup   # generate test puzzle data
+npm run dev          # start dev server
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### With real song data
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+If you have access to the private data repo:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git submodule update --init                           # pull private data
+npx tsx scripts/generate-daily.ts --date=2026-03-11   # generate today's puzzle
+npm run dev
 ```
+
+The `data/` directory is a git submodule pointing to a private repo containing the song charts and schedule.
+
+## Project Structure
+
+- `src/` — React frontend (chart renderer, game logic, UI)
+- `scripts/` — Build-time tools (puzzle generator, schedule builder, song importer)
+- `data/` — Private submodule: songs, schedule, guitar sound sources
+- `public/sounds/` — Guitar audio samples (open-licensed from freesound.org)
+
+## Deployment
+
+The private repo runs a nightly GitHub Action that generates the day's puzzle, builds the app, and deploys to Cloudflare Pages.
+
+To deploy manually:
+
+```bash
+npm run deploy
+```
+
+## Tech Stack
+
+- **Frontend**: React 19, TypeScript, Tailwind CSS, Vite
+- **Audio**: Strudel (JavaScript port of Tidal Cycles)
+- **Hosting**: Cloudflare Pages (free tier)
+- **Charts**: Parsed from Guitar Hero MIDI files

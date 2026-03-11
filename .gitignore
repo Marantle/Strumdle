@@ -9,8 +9,20 @@ lerna-debug.log*
 
 node_modules
 dist
+.env
+# Generated at build time — never commit
+src/data/today.json
+src/data/songList.json
+
+# Private data — lives in a separate private repo (submodule at data/)
+# schedule.json and songs/ are inside data/ now
+data/
 dist-ssr
 *.local
+guitar_sounds/
+
+# AI tool config
+.claude/
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +34,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+original_songs/
