@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Volume2, VolumeX, Play } from "lucide-react";
+import { Volume2, VolumeX, Play, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   audioManager,
@@ -31,6 +31,7 @@ const LANE_DOT_CSS = [
 
 export default function AudioControls({ disabled = false }: AudioControlsProps) {
   const [muted, setMuted] = useState(audioManager.isMuted());
+  const [expanded, setExpanded] = useState(false);
   const [laneSounds, setLaneSounds] = useState<SoundId[]>(audioManager.getLaneSounds());
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-lg mx-auto">
-      {/* Mute toggle */}
+      {/* Mute toggle + expand */}
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -84,9 +85,22 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
             </>
           )}
         </Button>
+        {!muted && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setExpanded((e) => !e)}
+            disabled={disabled}
+            className="gap-1.5 text-muted-foreground"
+          >
+            <Settings className="h-4 w-4" />
+            <span className="text-xs">Lane sounds</span>
+            <span className={`text-xs transition-transform ${expanded ? "rotate-180" : ""}`}>▼</span>
+          </Button>
+        )}
       </div>
 
-      {!muted && (
+      {!muted && expanded && (
         <>
           {/* Quick set all lanes */}
           <div className="flex flex-col gap-1.5">

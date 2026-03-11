@@ -363,6 +363,26 @@ const SAMPLE_SETS: Partial<Record<SoundId, SampleSetPaths>> = {
   },
 };
 
+// Prefetched raw ArrayBuffers (no AudioContext needed)
+const prefetchedBuffers = new Map<string, Promise<ArrayBuffer>>();
+
+function prefetchSamples() {
+  for (const paths of Object.values(SAMPLE_SETS)) {
+    if (!paths) continue;
+    for (const url of [...paths.hits, ...paths.sustains]) {
+      if (!prefetchedBuffers.has(url)) {
+        prefetchedBuffers.set(
+          url,
+          fetch(url).then((r) => r.arrayBuffer()).catch(() => new ArrayBuffer(0)),
+        );
+      }
+    }
+  }
+}
+
+// Start prefetching immediately on module load
+prefetchSamples();
+
 class AudioManager {
   private initialized = false;
   private muted = false;
@@ -395,8 +415,8 @@ class AudioManager {
       getNoiseBuffer(this.audioContext);
       this.initialized = true;
 
-      // Load samples in background (don't block init)
-      this.loadSamples();
+      // Decode prefetched samples (network already done, just decode)
+      await this.loadSamples();
     } catch (error) {
       console.error("Failed to initialize audio:", error);
       throw error;
@@ -409,10 +429,12 @@ class AudioManager {
 
     const load = async (url: string): Promise<AudioBuffer | null> => {
       try {
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        const arrayBuf = await res.arrayBuffer();
-        return await ctx.decodeAudioData(arrayBuf);
+        // Use prefetched ArrayBuffer if available
+        const arrayBuf = prefetchedBuffers.has(url)
+          ? await prefetchedBuffers.get(url)!
+          : await fetch(url).then((r) => r.arrayBuffer());
+        if (arrayBuf.byteLength === 0) return null;
+        return await ctx.decodeAudioData(arrayBuf.slice(0));
       } catch {
         console.warn(`Failed to load sample: ${url}`);
         return null;

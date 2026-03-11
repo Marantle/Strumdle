@@ -106,7 +106,7 @@ export default function GuessInput({
       </form>
 
       {showSuggestions && suggestions.length > 0 && !disabled && (
-        <ul className="absolute z-50 top-full left-0 right-12 mt-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+        <ul className="absolute z-50 bottom-full left-0 right-12 mb-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden max-h-64 overflow-y-auto">
           {suggestions.map((song, i) => (
             <li
               key={`${song.title}-${song.artist}`}
