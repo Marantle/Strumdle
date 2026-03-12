@@ -139,7 +139,7 @@ function findBestStart(slug: string, songLength: number): number {
       const score = windowNotes.length - firstNoteDelay * 0.01;
       if (score > bestScore) {
         bestScore = score;
-        bestStart = start;
+        bestStart = windowNotes[0]; // snap to first note hit
       }
     }
 

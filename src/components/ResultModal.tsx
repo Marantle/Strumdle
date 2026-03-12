@@ -28,20 +28,32 @@ function generateShareText(
     : `X/${maxGuesses}`;
   const rows = guessEntries.map((entry, i) => {
     const isCorrect = result.solved && i === guessEntries.length - 1;
-    if (isCorrect) return "\u{1F7E9}\u{1F7E9}";
-    const artist = entry.artistMatch ? "\u{1F7E8}" : "\u2B1B";
-    const game = entry.gameMatch ? "\u{1F7E6}" : "\u2B1B";
-    return `${artist}${game}`;
+    if (isCorrect) return "\u{1F7E9}";
+    if (entry.artistMatch) return "\u{1F7E8}";
+    if (entry.gameMatch) return "\u{1F7E6}";
+    return "\u2B1B";
   });
-  return `Strumdle #${challengeNumber} ${score}\n\n${rows.join("\n")}\n\n\u{1F7E8} Artist  \u{1F7E6} Game`;
+  return `https://strumdle.com #${challengeNumber} ${score}\n\n${rows.join("")}`;
 }
 
 function useCountdown(targetIso?: string) {
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
-    if (!targetIso) return;
-    const target = new Date(targetIso).getTime();
+    const getNextUtcMidnight = () => {
+      const now = new Date();
+      return Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + 1,
+        0,
+        0,
+        0,
+        0,
+      );
+    };
+
+    const target = targetIso ? new Date(targetIso).getTime() : getNextUtcMidnight();
 
     function calc() {
       const diff = target - Date.now();
@@ -245,7 +257,7 @@ export default function ResultModal({
           {/* Countdown */}
           {countdown && (
             <div className="text-center">
-              <p className="text-xs text-muted-foreground">Next Strumdle in</p>
+              <p className="text-xs text-muted-foreground">Next Strumdle in (UTC)</p>
               <p className="text-2xl font-mono font-bold tracking-wider mt-0.5">
                 {countdown}
               </p>

@@ -25,7 +25,7 @@ import type { TrackName } from "../src/types.ts";
 const dateArg = process.argv.find((a) => a.startsWith("--date="));
 const today = dateArg
   ? dateArg.split("=")[1]
-  : new Date().toISOString().split("T")[0];
+  : (process.env.npm_config_date ?? new Date().toISOString().split("T")[0]);
 
 // ---------------------------------------------------------------------------
 // Load schedule

@@ -30,13 +30,13 @@ export interface SoundDef {
 
 export const SOUND_CATALOG: SoundDef[] = [
   { id: "real",      name: "Real Guitar",  description: "Recorded power chord samples" },
-  { id: "funk",      name: "Funk Guitar",  description: "Short, clean, funky guitar notes" },
-  { id: "bass",      name: "Bass",        description: "Deep bass pluck" },
-  { id: "harmonic",  name: "Harmonic",    description: "Pure ringing harmonic" },
-  { id: "bell",      name: "Bell",        description: "Metallic chime" },
-  { id: "synth",     name: "Synth Lead",  description: "Filtered square wave" },
-  { id: "retro",     name: "Retro",       description: "8-bit game bleep" },
-  { id: "tap",       name: "Tap",         description: "Percussive click" },
+  { id: "funk",      name: "Funk Guitar",  description: "Recorded short, clean, funky guitar notes" },
+  { id: "bass",      name: "Bass",        description: "Virtual deep bass pluck" },
+  { id: "harmonic",  name: "Harmonic",    description: "Virtual pure ringing harmonic" },
+  { id: "bell",      name: "Bell",        description: "Virtual metallic chime" },
+  { id: "synth",     name: "Synth Lead",  description: "Virtual filtered square wave" },
+  { id: "retro",     name: "Retro",       description: "Virtual 8-bit game bleep" },
+  { id: "tap",       name: "Tap",         description: "Virtual percussive click" },
 ];
 
 // Base frequencies per lane (E3, A3, D4, G4, B4 — guitar open strings)

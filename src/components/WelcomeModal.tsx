@@ -67,10 +67,15 @@ export default function WelcomeModal() {
             chart scroll down the screen &mdash; your job is to figure out which
             song it is.
           </p>
-          <p>se
+          <p>
             Press <strong className="text-foreground">Play</strong> to watch the
             chart, then type your guess. You get 6 attempts, and the chart
             reveals more with each wrong guess.
+          </p>
+          <p className="text-xs border border-border rounded-lg px-3 py-2 bg-muted/40">
+            🔊 <strong className="text-foreground">Heads up:</strong> the sounds
+            are simulated &mdash; not from the real recordings. Trust the note
+            patterns! You can swap guitar sounds from the audio controls.
           </p>
         </div>
 
