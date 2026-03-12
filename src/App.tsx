@@ -34,6 +34,17 @@ function saveResult(result: DailyResult) {
   localStorage.setItem(key, JSON.stringify(result));
 }
 
+function reportStats(date: string, solved: boolean, attempts: number) {
+  const key = `stats-reported-${date}`;
+  if (localStorage.getItem(key)) return;
+  localStorage.setItem(key, "1");
+  fetch("/api/stats", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date, solved, attempts }),
+  }).catch(() => {}); // fire-and-forget
+}
+
 // Re-derive GuessEntry[] from saved title strings
 function hydrateGuesses(titles: string[]): GuessEntry[] {
   return titles.map((text) => {
@@ -92,6 +103,7 @@ export default function App() {
     initial.solvedOnAttempt,
   );
   const [modalOpen, setModalOpen] = useState(initial.gameState === "done");
+  const [showExtension, setShowExtension] = useState(false);
 
   const isPlaying = gameState === "playing";
   const isDone = gameState === "done";
@@ -143,10 +155,16 @@ export default function App() {
         setSolved(true);
         setSolvedOnAttempt(newGuesses.length);
         setGameState("done");
+        reportStats(challenge.date, true, newGuesses.length);
         setTimeout(() => setModalOpen(true), 600);
       } else if (newGuesses.length >= challenge.maxGuesses) {
         setGameState("done");
+        reportStats(challenge.date, false, newGuesses.length);
         setTimeout(() => setModalOpen(true), 600);
+      } else {
+        // Flash "+2s" notification for wrong guess
+        setShowExtension(true);
+        setTimeout(() => setShowExtension(false), 1500);
       }
     },
     [guesses],
@@ -178,9 +196,16 @@ export default function App() {
 
       {/* Play / Replay button */}
       {!isPlaying && (
-        <Button onClick={handlePlay} size="lg">
-          {guesses.length === 0 ? "Play" : "Replay"}
-        </Button>
+        <div className="relative">
+          <Button onClick={handlePlay} size="lg">
+            {guesses.length === 0 ? "Play" : "Replay"}
+          </Button>
+          {showExtension && (
+            <span className="absolute -right-14 top-1/2 -translate-y-1/2 text-sm font-medium text-emerald-400 animate-pulse">
+              +2s
+            </span>
+          )}
+        </div>
       )}
 
       {/* Guess input */}

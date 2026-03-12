@@ -1,2 +1,13 @@
 name = "strumdle"
 pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "STATS"
+id = "ccd3eee2010546fdbe41051860c2ad1b"
+
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "strumdle"
+
+[vars]
+CF_ACCOUNT_ID = ""  # set in Cloudflare Pages dashboard → Settings → Environment variables
