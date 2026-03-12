@@ -18,6 +18,11 @@ import songListData from "./data/songList.json";
 const challenge = dailyData as DailyChallenge;
 const songList = songListData as SongListEntry[];
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+}
+
 function loadResult(): DailyResult | null {
   try {
     const key = `daily-${challenge.date}`;
@@ -104,6 +109,8 @@ export default function App() {
   );
   const [modalOpen, setModalOpen] = useState(initial.gameState === "done");
   const [showExtension, setShowExtension] = useState(false);
+  const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   const isPlaying = gameState === "playing";
   const isDone = gameState === "done";
@@ -130,6 +137,39 @@ export default function App() {
     };
     saveResult(result);
   }, [guessTitles, solved, solvedOnAttempt]);
+
+  useEffect(() => {
+    const displayModeStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    const iosStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    if (displayModeStandalone || iosStandalone) {
+      setIsInstalled(true);
+    }
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPromptEvent(event as BeforeInstallPromptEvent);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setInstallPromptEvent(null);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const handleInstall = useCallback(async () => {
+    if (!installPromptEvent) return;
+    await installPromptEvent.prompt();
+    await installPromptEvent.userChoice;
+    setInstallPromptEvent(null);
+  }, [installPromptEvent]);
 
   const handlePlay = useCallback(() => {
     audioManager.initialize().catch(console.error);
@@ -180,6 +220,11 @@ export default function App() {
         <p className="text-sm text-muted-foreground">
           #{challenge.challengeNumber} &middot; Guess the song from the chart
         </p>
+        {!isInstalled && installPromptEvent && (
+          <Button className="mt-3" variant="outline" size="sm" onClick={handleInstall}>
+            Install App
+          </Button>
+        )}
       </div>
 
       {/* Highway */}

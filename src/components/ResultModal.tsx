@@ -77,7 +77,7 @@ export default function ResultModal({
   maxGuesses,
   nextChallengeAt,
 }: ResultModalProps) {
-  const [copied, setCopied] = useState(false);
+  const [shareState, setShareState] = useState<"idle" | "copied" | "shared">("idle");
   const [visible, setVisible] = useState(false);
   const countdown = useCountdown(nextChallengeAt);
 
@@ -96,6 +96,25 @@ export default function ResultModal({
 
   const handleShare = async () => {
     const text = generateShareText(result, guessEntries, challengeNumber, maxGuesses);
+    const shareData = {
+      title: `Strumdle #${challengeNumber}`,
+      text,
+      url: window.location.origin,
+    };
+
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+        setShareState("shared");
+        setTimeout(() => setShareState("idle"), 2500);
+        return;
+      } catch (error) {
+        if ((error as DOMException).name === "AbortError") {
+          return;
+        }
+      }
+    }
+
     try {
       await navigator.clipboard.writeText(text);
     } catch {
@@ -108,8 +127,8 @@ export default function ResultModal({
       document.execCommand("copy");
       document.body.removeChild(textarea);
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setShareState("copied");
+    setTimeout(() => setShareState("idle"), 2500);
   };
 
   const guessRows = Array.from({ length: maxGuesses }, (_, i) => {
@@ -216,7 +235,11 @@ export default function ResultModal({
             className="w-full"
             size="lg"
           >
-            {copied ? "Copied to clipboard!" : "Share Result"}
+            {shareState === "shared"
+              ? "Shared!"
+              : shareState === "copied"
+                ? "Copied to clipboard!"
+                : "Share Result"}
           </Button>
 
           {/* Countdown */}

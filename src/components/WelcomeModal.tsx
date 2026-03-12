@@ -67,15 +67,10 @@ export default function WelcomeModal() {
             chart scroll down the screen &mdash; your job is to figure out which
             song it is.
           </p>
-          <p>
+          <p>se
             Press <strong className="text-foreground">Play</strong> to watch the
             chart, then type your guess. You get 6 attempts, and the chart
             reveals more with each wrong guess.
-          </p>
-          <p className="text-xs border border-border/50 rounded-lg px-3 py-2 bg-muted/30">
-            ⚠️ You've stumbled upon a beta version! The daily puzzle doesn't
-            auto-update yet, so you may see the same challenge for a while. Stay
-            tuned.
           </p>
         </div>
 

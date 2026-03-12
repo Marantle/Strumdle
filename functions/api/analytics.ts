@@ -25,6 +25,21 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const url = new URL(request.url);
   const date = url.searchParams.get("date") ?? new Date().toISOString().split("T")[0];
 
+  if (!env.CF_ACCOUNT_ID || !env.CF_API_TOKEN) {
+    const missing = [
+      !env.CF_ACCOUNT_ID ? "CF_ACCOUNT_ID" : null,
+      !env.CF_API_TOKEN ? "CF_API_TOKEN" : null,
+    ].filter(Boolean);
+
+    return new Response(JSON.stringify({
+      error: "Missing required environment variables",
+      missing,
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
+  }
+
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return new Response(JSON.stringify({ error: "Invalid date" }), {
       status: 400,

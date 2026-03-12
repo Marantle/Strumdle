@@ -2,7 +2,9 @@
 
 A daily Guitar Hero guessing game. Watch a note chart scroll down the screen and guess which song it is. Built with React, TypeScript, and Vite.
 
-**Play at [strumdle.pages.dev](https://strumdle.pages.dev)**
+**Play at [strumdle.com](https://strumdle.com)**
+
+Fallback URL: [strumdle.pages.dev](https://strumdle.pages.dev)
 
 ## How It Works
 
@@ -33,9 +35,20 @@ The `data/` directory is a git submodule pointing to a private repo containing t
 ## Project Structure
 
 - `src/` — React frontend (chart renderer, game logic, UI)
+- `functions/api/` — Cloudflare Pages Functions API endpoints (`/api/stats`, `/api/analytics`)
 - `scripts/` — Build-time tools (puzzle generator, schedule builder, song importer)
 - `data/` — Private submodule: songs, schedule, guitar sound sources
 - `public/sounds/` — Guitar audio samples (open-licensed from freesound.org)
+
+## API Endpoints
+
+- `POST /api/stats` — record a daily result (writes to KV + Analytics Engine)
+- `GET /api/stats?date=YYYY-MM-DD` — read aggregate day stats from KV
+- `GET /api/analytics?date=YYYY-MM-DD` — query Analytics Engine SQL API and return named rows (`date`, `result`, `attempts`, `count`)
+
+Example:
+
+- [https://strumdle.com/api/analytics?date=2026-03-12](https://strumdle.com/api/analytics?date=2026-03-12)
 
 ## Available Scripts
 
@@ -61,6 +74,23 @@ To deploy manually:
 ```bash
 npm run deploy
 ```
+
+Cloudflare configuration used by this app:
+
+- `STATS` KV namespace binding
+- `ANALYTICS` Analytics Engine dataset binding (`strumdle`)
+- Pages environment variable: `CF_ACCOUNT_ID` (used by `/api/analytics`)
+- Pages secret: `CF_API_TOKEN` (used by `/api/analytics`)
+
+Note: set `CF_ACCOUNT_ID` and `CF_API_TOKEN` in the Cloudflare Pages dashboard (Environment Variables), not in source control.
+
+## PWA And SEO
+
+- PWA is enabled via `vite-plugin-pwa` with generated service worker + manifest.
+- Install prompt is available in supported Chromium browsers when `beforeinstallprompt` fires.
+- SEO crawl files are served from:
+	- [public/robots.txt](public/robots.txt)
+	- [public/sitemap.xml](public/sitemap.xml)
 
 ## Tech Stack
 

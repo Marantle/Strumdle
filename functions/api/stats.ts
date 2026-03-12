@@ -15,6 +15,7 @@
 interface Env {
   STATS: KVNamespace;
   ANALYTICS: AnalyticsEngineDataset;
+  IP_HASH_SALT?: string;
 }
 
 interface GameResult {
@@ -31,6 +32,18 @@ interface DayStats {
 
 function emptyStats(): DayStats {
   return { plays: 0, solves: 0, attempts: {} };
+}
+
+async function sha256Hex(input: string): Promise<string> {
+  const bytes = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const view = new Uint8Array(digest);
+  return Array.from(view).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function hashIp(ip: string, salt: string | undefined): Promise<string> {
+  // Salted hash prevents storing raw IP and makes brute-force reversal harder.
+  return sha256Hex(`${salt ?? ""}:${ip}`);
 }
 
 function isValidResult(body: unknown): body is GameResult {
@@ -68,6 +81,25 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       status: 400,
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
+  }
+
+  const cfIp = request.headers.get("CF-Connecting-IP");
+  const xff = request.headers.get("X-Forwarded-For");
+  const fallbackIp = xff?.split(",")[0]?.trim();
+  const clientIp = cfIp ?? fallbackIp ?? null;
+
+  if (clientIp) {
+    const ipHash = await hashIp(clientIp, env.IP_HASH_SALT);
+    const dedupeKey = `stats-ip:${body.date}:${ipHash}`;
+    const seen = await env.STATS.get(dedupeKey);
+    if (seen) {
+      return new Response(JSON.stringify({ ok: true, deduped: true }), {
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
+    }
+
+    // Keep dedupe records for long enough to cover replays of old challenge dates.
+    await env.STATS.put(dedupeKey, "1", { expirationTtl: 60 * 60 * 24 * 400 });
   }
 
   const key = `stats:${body.date}`;
