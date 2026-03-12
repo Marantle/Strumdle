@@ -6,8 +6,8 @@
  * Auto-detects which file is present in the song folder.
  *
  * Usage:
- *   npx tsx scripts/generate-daily.ts
- *   npx tsx scripts/generate-daily.ts --date 2026-03-15
+ *   npm run generate
+ *   npm run generate -- --date=2026-03-15
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "fs";
@@ -25,7 +25,7 @@ import type { TrackName } from "../src/types.ts";
 const dateArg = process.argv.find((a) => a.startsWith("--date="));
 const today = dateArg
   ? dateArg.split("=")[1]
-  : new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  : new Date().toISOString().split("T")[0];
 
 // ---------------------------------------------------------------------------
 // Load schedule
@@ -142,7 +142,7 @@ const nextEntry = schedule
   .filter((e) => e.date > today)
   .sort((a, b) => a.date.localeCompare(b.date))[0];
 const nextChallengeAt = nextEntry
-  ? `${nextEntry.date}T05:00:00Z` // 5am UTC = midnight Eastern
+  ? `${nextEntry.date}T00:00:00Z` // midnight UTC
   : undefined;
 
 const daily: DailyChallenge = {

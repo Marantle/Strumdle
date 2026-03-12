@@ -4,7 +4,7 @@
  *
  * Parses each MIDI to find a dense, non-silent start position.
  *
- * Usage: npx tsx scripts/generate-schedule.ts
+ * Usage: npm run schedule
  */
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";

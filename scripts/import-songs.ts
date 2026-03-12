@@ -2,7 +2,7 @@
  * One-time script: imports songs from original_songs/ into songs/
  * Copies only notes.mid and song.ini (no audio files).
  *
- * Usage: npx tsx scripts/import-songs.ts
+ * Usage: npm run import-songs
  */
 
 import { readdirSync, existsSync, mkdirSync, copyFileSync, readFileSync, statSync } from "fs";

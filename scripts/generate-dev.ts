@@ -4,7 +4,7 @@
  *
  * Outputs src/data/today.json and src/data/songList.json using test/test-song/.
  *
- * Usage: npx tsx scripts/generate-dev.ts
+ * Usage: npm run dev:setup
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";

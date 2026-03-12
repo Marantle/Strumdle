@@ -383,15 +383,53 @@ function prefetchSamples() {
 // Start prefetching immediately on module load
 prefetchSamples();
 
+const STORAGE_KEY = "strumdle-audio";
+const DEFAULT_SOUND: SoundId = "real";
+const VALID_SOUND_IDS = new Set<string>(SOUND_CATALOG.map((s) => s.id));
+
+function isValidSoundId(id: unknown): id is SoundId {
+  return typeof id === "string" && VALID_SOUND_IDS.has(id);
+}
+
+function loadAudioPrefs(): { laneSounds: SoundId[]; muted: boolean } {
+  const defaults = { laneSounds: Array(5).fill(DEFAULT_SOUND) as SoundId[], muted: false };
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaults;
+    const parsed = JSON.parse(raw);
+    const muted = typeof parsed.muted === "boolean" ? parsed.muted : false;
+    if (!Array.isArray(parsed.laneSounds)) return { ...defaults, muted };
+    // Validate each lane, falling back to default for unknown/removed sounds
+    const laneSounds = Array.from({ length: 5 }, (_, i) =>
+      isValidSoundId(parsed.laneSounds[i]) ? parsed.laneSounds[i] : DEFAULT_SOUND,
+    );
+    return { laneSounds, muted };
+  } catch {
+    return defaults;
+  }
+}
+
+function saveAudioPrefs(laneSounds: SoundId[], muted: boolean) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ laneSounds, muted }));
+  } catch { /* quota exceeded — ignore */ }
+}
+
 class AudioManager {
   private initialized = false;
-  private muted = false;
+  private muted: boolean;
   private volume = 0.7;
   private audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
 
   // Per-lane sound assignment
-  private laneSounds: SoundId[] = ["real", "real", "real", "real", "real"];
+  private laneSounds: SoundId[];
+
+  constructor() {
+    const prefs = loadAudioPrefs();
+    this.laneSounds = prefs.laneSounds;
+    this.muted = prefs.muted;
+  }
 
   // Loaded sample buffers keyed by SoundId
   private loadedSamples = new Map<SoundId, { hits: (AudioBuffer | null)[]; sustains: (AudioBuffer | null)[] }>();
@@ -458,6 +496,7 @@ class AudioManager {
 
   setLaneSound(lane: Lane, sound: SoundId) {
     this.laneSounds[lane] = sound;
+    saveAudioPrefs(this.laneSounds, this.muted);
   }
 
   getLaneSound(lane: Lane): SoundId {
@@ -471,6 +510,7 @@ class AudioManager {
   /** Set all lanes to the same sound at once */
   setAllLanes(sound: SoundId) {
     this.laneSounds = [sound, sound, sound, sound, sound];
+    saveAudioPrefs(this.laneSounds, this.muted);
   }
 
   // ---- Compat: old preset API (maps to setAllLanes) ----
@@ -493,7 +533,7 @@ class AudioManager {
 
   // ---- Mute / volume ----
 
-  setMuted(muted: boolean) { this.muted = muted; }
+  setMuted(muted: boolean) { this.muted = muted; saveAudioPrefs(this.laneSounds, this.muted); }
   isMuted(): boolean { return this.muted; }
 
   setVolume(volume: number) {

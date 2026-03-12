@@ -2,7 +2,7 @@
  * Shifts all schedule.json dates so the first entry starts today.
  * Useful during development before the app is released.
  *
- * Usage: npx tsx scripts/reschedule.ts
+ * Usage: npm run reschedule
  */
 
 import { readFileSync, writeFileSync } from "fs";
@@ -14,10 +14,8 @@ if (schedule.length === 0) {
   process.exit(0);
 }
 
-// Today in Eastern time (same convention as generate-daily.ts)
-const today = new Date().toLocaleDateString("en-CA", {
-  timeZone: "America/New_York",
-});
+// Today in UTC (same convention as generate-daily.ts)
+const today = new Date().toISOString().split("T")[0];
 
 function addDays(dateStr: string, days: number): string {
   const [y, m, d] = dateStr.split("-").map(Number);

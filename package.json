@@ -5,17 +5,21 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "tsc": "tsc --noEmit",
     "dev:setup": "tsx scripts/generate-dev.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "generate": "tsx scripts/generate-daily.ts",
+    "schedule": "tsx scripts/generate-schedule.ts",
+    "schedule:curated": "tsx scripts/build-curated-schedule.ts",
     "reschedule": "tsx scripts/reschedule.ts",
+    "import-songs": "tsx scripts/import-songs.ts",
     "deploy": "npm run build && wrangler pages deploy dist"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
     "@fontsource-variable/geist": "^5.2.8",
-    "@strudel/web": "^1.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fuse.js": "^7.1.0",

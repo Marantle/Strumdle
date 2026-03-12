@@ -31,9 +31,11 @@ export default function ChartHighway({
   });
 
   // Keep notes and audio state in sync
-  stateRef.current.notes = notes;
-  stateRef.current.clipDurationMs = clipDurationMs;
-  stateRef.current.audioEnabled = audioEnabled && !audioManager.isMuted();
+  useEffect(() => {
+    stateRef.current.notes = notes;
+    stateRef.current.clipDurationMs = clipDurationMs;
+    stateRef.current.audioEnabled = audioEnabled && !audioManager.isMuted();
+  }, [notes, clipDurationMs, audioEnabled]);
 
   // Initialize audio on component mount to avoid first-note delay
   useEffect(() => {

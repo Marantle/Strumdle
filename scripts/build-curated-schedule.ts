@@ -1,6 +1,6 @@
 /**
  * One-off: build the curated launch schedule with 10 iconic songs.
- * Usage: npx tsx scripts/build-curated-schedule.ts
+ * Usage: npm run schedule:curated
  */
 
 import { readFileSync, writeFileSync } from "fs";
