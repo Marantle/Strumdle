@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import type { DailyResult } from "../types";
+import type { GuessEntry } from "./GuessList";
 
 interface ResultModalProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface ResultModalProps {
   artist: string;
   solved: boolean;
   result: DailyResult;
+  guessEntries: GuessEntry[];
   challengeNumber: number;
   maxGuesses: number;
   nextChallengeAt?: string;
@@ -17,17 +19,21 @@ interface ResultModalProps {
 
 function generateShareText(
   result: DailyResult,
+  guessEntries: GuessEntry[],
   challengeNumber: number,
   maxGuesses: number,
 ): string {
   const score = result.solved
     ? `${result.solvedOnAttempt}/${maxGuesses}`
     : `X/${maxGuesses}`;
-  const rows = result.guesses.map((_, i) => {
-    const isCorrect = result.solved && i === result.guesses.length - 1;
-    return isCorrect ? "\u{1F7E9}\u{1F7E9}\u{1F7E9}\u{1F7E9}\u{1F7E9}" : "\u2B1B\u2B1B\u2B1B\u2B1B\u2B1B";
+  const rows = guessEntries.map((entry, i) => {
+    const isCorrect = result.solved && i === guessEntries.length - 1;
+    if (isCorrect) return "\u{1F7E9}\u{1F7E9}";
+    const artist = entry.artistMatch ? "\u{1F7E8}" : "\u2B1B";
+    const game = entry.gameMatch ? "\u{1F7E6}" : "\u2B1B";
+    return `${artist}${game}`;
   });
-  return `Strumdle #${challengeNumber} ${score}\n\n${rows.join("\n")}`;
+  return `Strumdle #${challengeNumber} ${score}\n\n${rows.join("\n")}\n\n\u{1F7E8} Artist  \u{1F7E6} Game`;
 }
 
 function useCountdown(targetIso?: string) {
@@ -66,6 +72,7 @@ export default function ResultModal({
   artist,
   solved,
   result,
+  guessEntries,
   challengeNumber,
   maxGuesses,
   nextChallengeAt,
@@ -88,7 +95,7 @@ export default function ResultModal({
   if (!open) return null;
 
   const handleShare = async () => {
-    const text = generateShareText(result, challengeNumber, maxGuesses);
+    const text = generateShareText(result, guessEntries, challengeNumber, maxGuesses);
     try {
       await navigator.clipboard.writeText(text);
     } catch {

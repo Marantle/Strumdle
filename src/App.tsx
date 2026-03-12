@@ -219,6 +219,7 @@ export default function App() {
             solved,
             solvedOnAttempt,
           }}
+          guessEntries={guesses}
           challengeNumber={challenge.challengeNumber}
           maxGuesses={challenge.maxGuesses}
           nextChallengeAt={challenge.nextChallengeAt}
