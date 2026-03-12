@@ -27,8 +27,8 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:site" content="@strumdle" />
-    <meta name="twitter:creator" content="@strumdle" />
+    <meta name="twitter:site" content="@Makotro" />
+    <meta name="twitter:creator" content="@Makotro" />
     <meta name="twitter:title" content="Strumdle" />
     <meta name="twitter:description" content="A daily music puzzle. Guess the song from a Guitar Hero-style note chart." />
     <meta name="twitter:image" content="https://strumdle.com/pwa-512x512.png" />
@@ -42,10 +42,45 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Strumdle",
-        "url": "https://strumdle.com/",
-        "description": "A daily music puzzle. Guess the song from a Guitar Hero-style note chart."
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://strumdle.com/#organization",
+            "name": "Strumdle",
+            "url": "https://strumdle.com/",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://strumdle.com/pwa-512x512.png"
+            }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://strumdle.com/#author",
+            "name": "Makotro",
+            "url": "https://x.com/Makotro"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://strumdle.com/#website",
+            "name": "Strumdle",
+            "url": "https://strumdle.com/",
+            "description": "A daily music puzzle. Guess the song from a Guitar Hero-style note chart.",
+            "publisher": { "@id": "https://strumdle.com/#organization" },
+            "image": "https://strumdle.com/pwa-512x512.png"
+          },
+          {
+            "@type": "WebPage",
+            "@id": "https://strumdle.com/#webpage",
+            "url": "https://strumdle.com/",
+            "name": "Strumdle",
+            "description": "A daily music puzzle. Guess the song from a Guitar Hero-style note chart.",
+            "isPartOf": { "@id": "https://strumdle.com/#website" },
+            "author": { "@id": "https://strumdle.com/#author" },
+            "publisher": { "@id": "https://strumdle.com/#organization" },
+            "datePublished": "2026-03-11",
+            "image": "https://strumdle.com/pwa-512x512.png"
+          }
+        ]
       }
     </script>
   </head>
