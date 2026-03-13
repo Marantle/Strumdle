@@ -79,9 +79,23 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     });
   }
 
-  const { data } = await resp.json<{ data: { date: string; result: string; attempts: number; count: number }[] }>();
+  const { data } = await resp.json<{ data: { date: string; result: string; attempts: number; count: string }[] }>();
 
-  return new Response(JSON.stringify({ date, rows: data }), {
+  let plays = 0;
+  let solves = 0;
+  const attempts: Record<string, number> = {};
+
+  for (const row of data) {
+    const count = parseInt(row.count, 10);
+    plays += count;
+    if (row.result === "solved") {
+      solves += count;
+      const k = String(row.attempts);
+      attempts[k] = (attempts[k] ?? 0) + count;
+    }
+  }
+
+  return new Response(JSON.stringify({ date, plays, solves, attempts }), {
     headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
 };

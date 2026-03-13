@@ -140,7 +140,7 @@ export default function ResultModal({
 
     async function loadDailyStats() {
       try {
-        const response = await fetch(`/api/stats?date=${encodeURIComponent(result.date)}`);
+        const response = await fetch(`/api/analytics?date=${encodeURIComponent(result.date)}`);
         if (!response.ok) {
           if (!cancelled) {
             setDailyStats(import.meta.env.DEV ? createMockDailyStats(result.date, maxGuesses) : null);

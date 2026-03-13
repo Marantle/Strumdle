@@ -12,7 +12,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       injectRegister: "auto",
       workbox: {
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/visitorstats/],
       },
       manifest: {
         name: "Strumdle",
@@ -46,6 +46,14 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+        visitorstats: path.resolve(__dirname, "visitorstats.html"),
+      },
     },
   },
 })
