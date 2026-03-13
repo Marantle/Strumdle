@@ -8,6 +8,7 @@ import { audioManager } from "../lib/audio/audioManager";
 interface ChartHighwayProps {
   notes: NoteEvent[];
   clipDurationMs: number;
+  songStartMs?: number;
   playing: boolean;
   onPlaybackComplete: () => void;
   audioEnabled?: boolean;
@@ -16,6 +17,7 @@ interface ChartHighwayProps {
 export default function ChartHighway({
   notes,
   clipDurationMs,
+  songStartMs = 0,
   playing,
   onPlaybackComplete,
   audioEnabled = true,
@@ -24,6 +26,7 @@ export default function ChartHighway({
   const stateRef = useRef<RendererState>({
     notes,
     clipDurationMs,
+    songStartMs,
     startTime: null,
     rafId: null,
     playedNotes: new Set<string>(),
@@ -34,8 +37,9 @@ export default function ChartHighway({
   useEffect(() => {
     stateRef.current.notes = notes;
     stateRef.current.clipDurationMs = clipDurationMs;
+    stateRef.current.songStartMs = songStartMs;
     stateRef.current.audioEnabled = audioEnabled && !audioManager.isMuted();
-  }, [notes, clipDurationMs, audioEnabled]);
+  }, [notes, clipDurationMs, songStartMs, audioEnabled]);
 
   // Initialize audio on component mount to avoid first-note delay
   useEffect(() => {
@@ -107,13 +111,14 @@ export default function ChartHighway({
     const fakeState: RendererState = {
       notes,
       clipDurationMs,
+      songStartMs,
       startTime: performance.now(),
       playedNotes: new Set<string>(),
       audioEnabled: false,
       rafId: null,
     };
     render(ctx, fakeState, performance.now());
-  }, [notes, clipDurationMs, playing]);
+  }, [notes, clipDurationMs, songStartMs, playing]);
 
   return (
     <canvas

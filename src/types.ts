@@ -3,6 +3,7 @@ export interface DailyChallenge {
   date: string; // "2026-03-10"
   challengeNumber: number; // day 1, 2, 3... derived from date
   clip: PublicClipData;
+  clipSongStartMs?: number; // start position in original song timeline (ms)
   answerObfuscated: string; // btoa(title + "|" + artist)
   aliasesObfuscated: string[]; // btoa() of each alias
   hints: string[]; // up to 3 hints, revealed after guesses 2, 3, 4

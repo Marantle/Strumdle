@@ -548,6 +548,9 @@ export function render(
   // Clip duration badge
   drawClipBadge(ctx, config, state.clipDurationMs);
 
+  // Running song position badge
+  drawSongPositionBadge(ctx, config, state.songStartMs + elapsed);
+
   return elapsed < state.clipDurationMs;
 }
 
@@ -593,6 +596,57 @@ function drawClipBadge(
 
   // Text
   ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, px + padX, py + h / 2);
+}
+
+function formatSongPosition(ms: number): string {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+/**
+ * Draw the running absolute song position in the top-right corner.
+ */
+function drawSongPositionBadge(
+  ctx: CanvasRenderingContext2D,
+  config: RendererConfig,
+  songPositionMs: number,
+): void {
+  const text = formatSongPosition(songPositionMs);
+  const padX = 8;
+  const padY = 4;
+
+  ctx.font = "bold 11px system-ui, sans-serif";
+  const metrics = ctx.measureText(text);
+  const w = metrics.width + padX * 2;
+  const h = 16 + padY * 2;
+
+  const py = config.topY + 16;
+  const px = config.canvasWidth - w - 12;
+  const r = 4;
+
+  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+  ctx.beginPath();
+  ctx.moveTo(px + r, py);
+  ctx.lineTo(px + w - r, py);
+  ctx.quadraticCurveTo(px + w, py, px + w, py + r);
+  ctx.lineTo(px + w, py + h - r);
+  ctx.quadraticCurveTo(px + w, py + h, px + w - r, py + h);
+  ctx.lineTo(px + r, py + h);
+  ctx.quadraticCurveTo(px, py + h, px, py + h - r);
+  ctx.lineTo(px, py + r);
+  ctx.quadraticCurveTo(px, py, px + r, py);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
   ctx.textBaseline = "middle";
   ctx.fillText(text, px + padX, py + h / 2);
 }

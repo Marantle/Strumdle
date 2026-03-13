@@ -3,6 +3,7 @@ import type { NoteEvent } from "../../types";
 export interface RendererState {
   notes: NoteEvent[];
   clipDurationMs: number; // always 5000
+  songStartMs: number; // absolute song timeline position for elapsed=0
   startTime: number | null; // performance.now() when playback started
   rafId: number | null;
   playedNotes: Set<string>; // Track which notes have been played (avoid retriggering)

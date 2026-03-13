@@ -149,6 +149,7 @@ const daily: DailyChallenge = {
   date: today,
   challengeNumber,
   clip,
+  clipSongStartMs: entry.startMs,
   answerObfuscated: Buffer.from(answer).toString("base64"),
   aliasesObfuscated: (entry.aliases ?? []).map((a) =>
     Buffer.from(a).toString("base64"),

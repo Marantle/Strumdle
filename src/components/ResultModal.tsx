@@ -17,6 +17,30 @@ interface ResultModalProps {
   nextChallengeAt?: string;
 }
 
+interface DailyStatsResponse {
+  date: string;
+  plays: number;
+  solves: number;
+  attempts: Record<string, number>;
+}
+
+function createMockDailyStats(date: string, maxGuesses: number): DailyStatsResponse {
+  const attempts: Record<string, number> = {};
+  const mockCounts = [10, 8, 6, 3, 0, 0];
+
+  for (let i = 0; i < maxGuesses; i++) {
+    attempts[String(i + 1)] = mockCounts[i] ?? 1;
+  }
+
+  const solves = Object.values(attempts).reduce((sum, value) => sum + value, 0);
+  return {
+    date,
+    attempts,
+    solves,
+    plays: solves + 4,
+  };
+}
+
 function generateShareText(
   result: DailyResult,
   guessEntries: GuessEntry[],
@@ -91,6 +115,7 @@ export default function ResultModal({
 }: ResultModalProps) {
   const [shareState, setShareState] = useState<"idle" | "copied" | "shared">("idle");
   const [visible, setVisible] = useState(false);
+  const [dailyStats, setDailyStats] = useState<DailyStatsResponse | null>(null);
   const countdown = useCountdown(nextChallengeAt);
 
   // Animate in
@@ -103,6 +128,36 @@ export default function ResultModal({
       setVisible(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+
+    async function loadDailyStats() {
+      try {
+        const response = await fetch(`/api/stats?date=${encodeURIComponent(result.date)}`);
+        if (!response.ok) {
+          if (!cancelled) {
+            setDailyStats(import.meta.env.DEV ? createMockDailyStats(result.date, maxGuesses) : null);
+          }
+          return;
+        }
+
+        const data = await response.json() as DailyStatsResponse;
+        if (cancelled) return;
+        setDailyStats(data);
+      } catch {
+        if (cancelled) return;
+        setDailyStats(import.meta.env.DEV ? createMockDailyStats(result.date, maxGuesses) : null);
+      }
+    }
+
+    loadDailyStats();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, result.date, maxGuesses]);
 
   if (!open) return null;
 
@@ -148,6 +203,13 @@ export default function ResultModal({
     if (result.solved && i === result.guesses.length - 1) return "correct";
     return "wrong";
   });
+
+  const attemptDistribution = Array.from({ length: maxGuesses }, (_, i) => {
+    const attempt = i + 1;
+    const count = dailyStats?.attempts?.[String(attempt)] ?? 0;
+    return { attempt, count };
+  });
+  const maxAttemptCount = Math.max(1, ...attemptDistribution.map((row) => row.count));
 
   return (
     <div
@@ -231,6 +293,39 @@ export default function ResultModal({
               : `X/${maxGuesses}`}
           </p>
         </div>
+
+        {/* Daily guess distribution */}
+        {dailyStats && dailyStats.solves > 0 && (
+          <div className="px-6 pb-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
+              Today&apos;s Solve Distribution
+            </p>
+            <div className="space-y-1.5">
+              {attemptDistribution.map((row) => {
+                const widthPct = (row.count / maxAttemptCount) * 100;
+                return (
+                  <div key={row.attempt} className="flex items-center gap-2">
+                    <span className="w-4 text-xs text-muted-foreground tabular-nums">
+                      {row.attempt}
+                    </span>
+                    <div className="flex-1 h-5 rounded-sm bg-muted/40 border border-border/50 overflow-hidden">
+                      <div
+                        className="h-full bg-emerald-500/80"
+                        style={{ width: `${widthPct}%` }}
+                      />
+                    </div>
+                    <span className="w-5 text-right text-xs text-muted-foreground tabular-nums">
+                      {row.count}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              {dailyStats.solves}/{dailyStats.plays} solved today
+            </p>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="px-6 pb-6 pt-2 flex flex-col gap-3">

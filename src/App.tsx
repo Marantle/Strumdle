@@ -231,6 +231,7 @@ export default function App() {
       <ChartHighway
         notes={visibleNotes}
         clipDurationMs={visibleDurationMs}
+        songStartMs={challenge.clipSongStartMs ?? 0}
         playing={isPlaying}
         onPlaybackComplete={handlePlaybackComplete}
         audioEnabled={true}
