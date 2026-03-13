@@ -6,6 +6,7 @@ import type { SongListEntry } from "../types";
 
 interface GuessInputProps {
   onGuess: (guess: string) => void;
+  onSkip: () => void;
   disabled: boolean;
   attemptsLeft: number;
   songList: SongListEntry[];
@@ -13,6 +14,7 @@ interface GuessInputProps {
 
 export default function GuessInput({
   onGuess,
+  onSkip,
   disabled,
   attemptsLeft,
   songList,
@@ -51,16 +53,20 @@ export default function GuessInput({
     setSelectedIndex(-1);
   };
 
+  const canGuess = selectedIndex >= 0 || suggestions.length === 1;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Only allow submitting a selected suggestion
     if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
       submit(suggestions[selectedIndex].title);
     } else if (suggestions.length === 1) {
-      // Auto-pick if there's exactly one match
       submit(suggestions[0].title);
+    } else {
+      setValue("");
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+      onSkip();
     }
-    // Otherwise do nothing — user must pick from the list
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -100,8 +106,8 @@ export default function GuessInput({
           autoComplete="off"
           className="flex-1"
         />
-        <Button type="submit" disabled={disabled || suggestions.length === 0}>
-          Guess
+        <Button type="submit" disabled={disabled} variant={canGuess ? "default" : "outline"}>
+          {canGuess ? "Guess" : "Skip"}
         </Button>
       </form>
 

@@ -7,6 +7,7 @@ interface ResultModalProps {
   open: boolean;
   onClose: () => void;
   onReplay: () => void;
+  replayDurationMs?: number;
   title: string;
   artist: string;
   solved: boolean;
@@ -57,7 +58,9 @@ function generateShareText(
     if (entry.gameMatch) return "\u{1F7E6}";
     return "\u2B1B";
   });
-  return `https://strumdle.com #${challengeNumber} ${score}\n\n${rows.join("")}`;
+  const remaining = maxGuesses - guessEntries.length;
+  const allRows = [...rows, ...Array(remaining).fill("\u2B1C")];
+  return `https://strumdle.com #${challengeNumber} ${score} · ${result.date}\n\n${allRows.join("")}`;
 }
 
 function useCountdown(targetIso?: string) {
@@ -104,6 +107,7 @@ export default function ResultModal({
   open,
   onClose,
   onReplay,
+  replayDurationMs,
   title,
   artist,
   solved,
@@ -210,6 +214,9 @@ export default function ResultModal({
     return { attempt, count };
   });
   const maxAttemptCount = Math.max(1, ...attemptDistribution.map((row) => row.count));
+  const replayButtonLabel = solved && replayDurationMs
+    ? `Replay Full ${Math.round(replayDurationMs / 1000)}s Clip`
+    : "Replay Clip";
 
   return (
     <div
@@ -335,7 +342,7 @@ export default function ResultModal({
             size="lg"
             onClick={onReplay}
           >
-            Replay Clip
+            {replayButtonLabel}
           </Button>
           <Button
             onClick={handleShare}

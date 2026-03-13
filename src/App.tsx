@@ -119,7 +119,11 @@ export default function App() {
   // Calculate visible clip duration based on number of guesses
   const BASE_DURATION_MS = 7_000;
   const EXTENSION_PER_GUESS_MS = 2_000;
-  const visibleDurationMs = BASE_DURATION_MS + (guesses.length * EXTENSION_PER_GUESS_MS);
+  const FULL_REPLAY_DURATION_MS =
+    BASE_DURATION_MS + (challenge.maxGuesses * EXTENSION_PER_GUESS_MS);
+  const visibleDurationMs = solved
+    ? FULL_REPLAY_DURATION_MS
+    : BASE_DURATION_MS + (guesses.length * EXTENSION_PER_GUESS_MS);
 
   // Filter notes to only show those within the visible duration
   const visibleNotes = challenge.clip.notes.filter(note => note.timeMs < visibleDurationMs);
@@ -176,9 +180,26 @@ export default function App() {
     setGameState("playing");
   }, []);
 
+  const handleStop = useCallback(() => {
+    setGameState("idle");
+  }, []);
+
   const handlePlaybackComplete = useCallback(() => {
     setGameState("idle");
   }, []);
+
+  const handleSkip = useCallback(() => {
+    const newGuesses = [...guesses, { text: "—", artistMatch: false, gameMatch: false }];
+    setGuesses(newGuesses);
+    if (newGuesses.length >= challenge.maxGuesses) {
+      setGameState("done");
+      reportStats(challenge.date, false, newGuesses.length);
+      setTimeout(() => setModalOpen(true), 600);
+    } else {
+      setShowExtension(true);
+      setTimeout(() => setShowExtension(false), 1500);
+    }
+  }, [guesses]);
 
   const handleGuess = useCallback(
     (guess: string) => {
@@ -202,9 +223,8 @@ export default function App() {
         reportStats(challenge.date, false, newGuesses.length);
         setTimeout(() => setModalOpen(true), 600);
       } else {
-        // Flash "+2s" notification for wrong guess
         setShowExtension(true);
-        setTimeout(() => setShowExtension(false), 1500);
+        setTimeout(() => setShowExtension(false), 2000);
       }
     },
     [guesses],
@@ -218,7 +238,7 @@ export default function App() {
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight">Strumdle</h1>
         <p className="text-sm text-muted-foreground">
-          #{challenge.challengeNumber} &middot; Guess the song from the chart
+          #{challenge.challengeNumber} &nbsp; Guess the song from the chart
         </p>
         {!isInstalled && installPromptEvent && (
           <Button className="mt-3" variant="outline" size="sm" onClick={handleInstall}>
@@ -240,8 +260,12 @@ export default function App() {
       {/* Audio Controls */}
       <AudioControls disabled={isPlaying} />
 
-      {/* Play / Replay button */}
-      {!isPlaying && (
+      {/* Play / Stop / Replay button */}
+      {isPlaying ? (
+        <Button variant="outline" onClick={handleStop} size="lg">
+          Stop
+        </Button>
+      ) : (
         <div className="relative">
           <Button onClick={handlePlay} size="lg">
             {guesses.length === 0 ? "Play" : "Replay"}
@@ -257,6 +281,7 @@ export default function App() {
       {/* Guess input */}
       <GuessInput
         onGuess={handleGuess}
+        onSkip={handleSkip}
         disabled={!canGuess || isPlaying}
         attemptsLeft={challenge.maxGuesses - guesses.length}
         songList={songList}
@@ -284,6 +309,7 @@ export default function App() {
           title={answer.title}
           artist={answer.artist}
           solved={solved}
+          replayDurationMs={FULL_REPLAY_DURATION_MS}
           result={{
             date: challenge.date,
             guesses: guessTitles,
