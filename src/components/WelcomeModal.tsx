@@ -39,8 +39,8 @@ export default function WelcomeModal() {
       <div
         className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transition-all duration-500 ${
           visible
-            ? "opacity-100 scale-100 translate-y-0"
-            : "opacity-0 scale-95 translate-y-4"
+            ? "opacity-100"
+            : "opacity-0"
         }`}
         onClick={(e) => e.stopPropagation()}
       >

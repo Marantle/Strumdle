@@ -11,22 +11,15 @@ import { checkGuess, revealAnswer } from "./lib/guess/match";
 import { audioManager } from "./lib/audio/audioManager";
 import type { DailyChallenge, DailyResult, SongListEntry, GameState } from "./types";
 
-// Import the generated daily challenge data
-import dailyData from "./data/today.json";
-import songListData from "./data/songList.json";
-
-const challenge = dailyData as DailyChallenge;
-const songList = songListData as SongListEntry[];
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 }
 
-function loadResult(): DailyResult | null {
+function loadResult(date: string): DailyResult | null {
   try {
-    const key = `daily-${challenge.date}`;
-    const stored = localStorage.getItem(key);
+    const stored = localStorage.getItem(`daily-${date}`);
     if (!stored) return null;
     return JSON.parse(stored) as DailyResult;
   } catch {
@@ -35,71 +28,57 @@ function loadResult(): DailyResult | null {
 }
 
 function saveResult(result: DailyResult) {
-  const key = `daily-${challenge.date}`;
-  localStorage.setItem(key, JSON.stringify(result));
+  localStorage.setItem(`daily-${result.date}`, JSON.stringify(result));
 }
 
 function reportStats(date: string, solved: boolean, attempts: number) {
   const key = `stats-reported-${date}`;
   if (localStorage.getItem(key)) return;
   localStorage.setItem(key, "1");
-  fetch("/api/stats", {
+  fetch("/api/analytics", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ date, solved, attempts }),
   }).catch(() => {}); // fire-and-forget
 }
 
-// Re-derive GuessEntry[] from saved title strings
-function hydrateGuesses(titles: string[]): GuessEntry[] {
+function hydrateGuesses(
+  titles: string[],
+  challenge: DailyChallenge,
+  songList: SongListEntry[],
+): GuessEntry[] {
   return titles.map((text) => {
     const result = checkGuess(text, challenge, songList);
     return { text, artistMatch: result.artistMatch, gameMatch: result.gameMatch };
   });
 }
 
-function getInitialState(saved: DailyResult | null): {
+function getInitialState(
+  saved: DailyResult | null,
+  challenge: DailyChallenge,
+  songList: SongListEntry[],
+): {
   gameState: GameState;
   guesses: GuessEntry[];
   solved: boolean;
   solvedOnAttempt: number | null;
 } {
   if (saved) {
-    const guesses = hydrateGuesses(saved.guesses);
+    const guesses = hydrateGuesses(saved.guesses, challenge, songList);
     if (saved.solved) {
-      return {
-        gameState: "done",
-        guesses,
-        solved: true,
-        solvedOnAttempt: saved.solvedOnAttempt,
-      };
+      return { gameState: "done", guesses, solved: true, solvedOnAttempt: saved.solvedOnAttempt };
     }
     if (saved.guesses.length >= challenge.maxGuesses) {
-      return {
-        gameState: "done",
-        guesses,
-        solved: false,
-        solvedOnAttempt: null,
-      };
+      return { gameState: "done", guesses, solved: false, solvedOnAttempt: null };
     }
-    return {
-      gameState: "idle",
-      guesses,
-      solved: false,
-      solvedOnAttempt: null,
-    };
+    return { gameState: "idle", guesses, solved: false, solvedOnAttempt: null };
   }
-  return {
-    gameState: "ready",
-    guesses: [],
-    solved: false,
-    solvedOnAttempt: null,
-  };
+  return { gameState: "ready", guesses: [], solved: false, solvedOnAttempt: null };
 }
 
-export default function App() {
-  const saved = loadResult();
-  const initial = getInitialState(saved);
+export default function App({ challenge, songList }: { challenge: DailyChallenge; songList: SongListEntry[] }) {
+  const saved = loadResult(challenge.date);
+  const initial = getInitialState(saved, challenge, songList);
 
   const [gameState, setGameState] = useState<GameState>(initial.gameState);
   const [guesses, setGuesses] = useState<GuessEntry[]>(initial.guesses);
@@ -240,6 +219,11 @@ export default function App() {
         <p className="text-sm text-muted-foreground">
           #{challenge.challengeNumber} &nbsp; Guess the song from the chart
         </p>
+        {challenge.challengeNumber === 1 && (
+          <p className="text-xs text-muted-foreground/60 mt-1">
+            This is a dev/test song — the real challenges start at #2
+          </p>
+        )}
         {!isInstalled && installPromptEvent && (
           <Button className="mt-3" variant="outline" size="sm" onClick={handleInstall}>
             Install App

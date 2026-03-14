@@ -103,6 +103,45 @@ function useCountdown(targetIso?: string) {
   return timeLeft;
 }
 
+function PastChallengesGrid({ current }: { current: number }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="border-t border-border/50 pt-3">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <span>Past Challenges</span>
+        <span>{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {Array.from({ length: current }, (_, i) => i + 1).map((n) => {
+            const isCurrent = n === current;
+            return isCurrent ? (
+              <span
+                key={n}
+                className="w-9 h-9 flex items-center justify-center rounded-md text-xs font-bold bg-primary text-primary-foreground"
+              >
+                #{n}
+              </span>
+            ) : (
+              <a
+                key={n}
+                href={`/${n}`}
+                className="w-9 h-9 flex items-center justify-center rounded-md text-xs font-medium bg-muted hover:bg-muted/70 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                #{n}
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ResultModal({
   open,
   onClose,
@@ -124,13 +163,18 @@ export default function ResultModal({
 
   // Animate in
   useEffect(() => {
+    let raf1: number, raf2: number;
     if (open) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setVisible(true));
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => setVisible(true));
       });
     } else {
-      setVisible(false);
+      raf1 = requestAnimationFrame(() => setVisible(false));
     }
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -228,8 +272,8 @@ export default function ResultModal({
       <div
         className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transition-all duration-500 ${
           visible
-            ? "opacity-100 scale-100 translate-y-0"
-            : "opacity-0 scale-95 translate-y-4"
+            ? "opacity-100"
+            : "opacity-0"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -302,11 +346,22 @@ export default function ResultModal({
         </div>
 
         {/* Daily guess distribution */}
-        {dailyStats && dailyStats.solves > 0 && (
-          <div className="px-6 pb-3">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
-              Today&apos;s Solve Distribution
-            </p>
+        <div className="px-6 pb-3">
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
+            Today&apos;s Solve Distribution
+          </p>
+          {dailyStats === null ? (
+            <div className="space-y-1.5">
+              {Array.from({ length: maxGuesses }, (_, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="w-4 h-3 rounded bg-muted/40 animate-pulse" />
+                  <div className="flex-1 h-5 rounded-sm bg-muted/40 animate-pulse" />
+                  <span className="w-5 h-3 rounded bg-muted/40 animate-pulse" />
+                </div>
+              ))}
+              <p className="h-3 w-24 rounded bg-muted/40 animate-pulse mt-2" />
+            </div>
+          ) : (
             <div className="space-y-1.5">
               {attemptDistribution.map((row) => {
                 const widthPct = (row.count / maxAttemptCount) * 100;
@@ -327,12 +382,12 @@ export default function ResultModal({
                   </div>
                 );
               })}
+              <p className="text-[11px] text-muted-foreground mt-2">
+                {dailyStats.solves}/{dailyStats.plays} solved today
+              </p>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              {dailyStats.solves}/{dailyStats.plays} solved today
-            </p>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Actions */}
         <div className="px-6 pb-6 pt-2 flex flex-col gap-3">
@@ -372,6 +427,9 @@ export default function ResultModal({
               )}
             </div>
           )}
+
+          {/* Past challenges grid */}
+          {challengeNumber > 1 && <PastChallengesGrid current={challengeNumber} />}
         </div>
       </div>
     </div>

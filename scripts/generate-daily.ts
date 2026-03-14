@@ -11,12 +11,10 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "fs";
-import { dirname, join } from "path";
-import { parseChart } from "./parser/chartParser.ts";
-import { parseMidi, parseSongIni } from "./parser/midiParser.ts";
-import { normalize, sliceClip } from "./parser/normalizer.ts";
-import type { DailyChallenge, SongListEntry } from "../src/types.ts";
-import type { TrackName } from "../src/types.ts";
+import { join } from "path";
+import { parseSongIni } from "./parser/midiParser.ts";
+import type { SongListEntry } from "../src/types.ts";
+import { buildChallenge, type ScheduleEntry } from "./lib/buildChallenge.ts";
 
 // ---------------------------------------------------------------------------
 // Resolve "today" in a timezone-safe way
@@ -31,18 +29,6 @@ const today = dateArg
 // Load schedule
 // ---------------------------------------------------------------------------
 
-interface ScheduleEntry {
-  date: string;
-  chartFile: string; // path to song folder OR specific .chart file
-  track: string;
-  startMs: number;
-  title: string;
-  artist: string;
-  hints: string[];
-  aliases?: string[];
-  game?: string;
-}
-
 const schedule: ScheduleEntry[] = JSON.parse(
   readFileSync("data/schedule.json", "utf8"),
 );
@@ -54,114 +40,21 @@ if (!entry) {
 }
 
 // ---------------------------------------------------------------------------
-// Auto-detect chart format and parse
+// Build challenge
 // ---------------------------------------------------------------------------
 
-const track = entry.track as TrackName;
+const daily = buildChallenge(entry);
 
-function loadChart(path: string) {
-  // If path points directly to a .chart file
-  if (path.endsWith(".chart")) {
-    const content = readFileSync(path, "utf8");
-    return parseChart(content, track);
-  }
-
-  // If path points directly to a .mid file
-  if (path.endsWith(".mid")) {
-    const buffer = readFileSync(path);
-    const meta = tryLoadSongIni(dirname(path));
-    return parseMidi(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), track, meta);
-  }
-
-  // If path is a directory, auto-detect
-  const dir = path;
-
-  // Try notes.chart first
-  const chartPath = join(dir, "notes.chart");
-  if (existsSync(chartPath)) {
-    console.log(`  Format: .chart (text)`);
-    const content = readFileSync(chartPath, "utf8");
-    return parseChart(content, track);
-  }
-
-  // Try notes.mid
-  const midPath = join(dir, "notes.mid");
-  if (existsSync(midPath)) {
-    console.log(`  Format: .mid (MIDI binary)`);
-    const buffer = readFileSync(midPath);
-    const meta = tryLoadSongIni(dir);
-    return parseMidi(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength), track, meta);
-  }
-
-  throw new Error(
-    `No notes.chart or notes.mid found in "${dir}". ` +
-    `Available files: ${readdirSafe(dir).join(', ')}`,
-  );
-}
-
-function tryLoadSongIni(dir: string): { title?: string; artist?: string } | undefined {
-  const iniPath = join(dir, "song.ini");
-  if (existsSync(iniPath)) {
-    const ini = parseSongIni(readFileSync(iniPath, "utf8"));
-    console.log(`  song.ini: ${ini.title} by ${ini.artist}`);
-    return { title: ini.title, artist: ini.artist };
-  }
-  return undefined;
-}
-
-function readdirSafe(dir: string): string[] {
-  try {
-    const { readdirSync } = require("fs");
-    return readdirSync(dir);
-  } catch {
-    return ['(could not read directory)'];
-  }
-}
-
-const raw = loadChart(entry.chartFile);
-const parsed = normalize(raw, track);
-
-// ---------------------------------------------------------------------------
-// Slice clip
-// ---------------------------------------------------------------------------
-
-const clip = sliceClip(parsed, entry.startMs);
-
-// ---------------------------------------------------------------------------
-// Build output
-// ---------------------------------------------------------------------------
-
-const EPOCH = new Date("2026-03-10").getTime();
-const challengeNumber =
-  Math.floor((new Date(today).getTime() - EPOCH) / 86_400_000) + 1;
-
-const answer = `${entry.title}|${entry.artist}`;
-
-// Find next scheduled date after today for countdown timer
+// Set countdown to next scheduled challenge
 const nextEntry = schedule
   .filter((e) => e.date > today)
   .sort((a, b) => a.date.localeCompare(b.date))[0];
-const nextChallengeAt = nextEntry
+daily.nextChallengeAt = nextEntry
   ? `${nextEntry.date}T01:00:00Z` // 1am UTC
   : undefined;
 
-const daily: DailyChallenge = {
-  date: today,
-  challengeNumber,
-  clip,
-  clipSongStartMs: entry.startMs,
-  answerObfuscated: Buffer.from(answer).toString("base64"),
-  aliasesObfuscated: (entry.aliases ?? []).map((a) =>
-    Buffer.from(a).toString("base64"),
-  ),
-  hints: entry.hints,
-  maxGuesses: 6,
-  game: entry.game,
-  nextChallengeAt,
-};
-
 const outPath = "src/data/today.json";
-mkdirSync(dirname(outPath), { recursive: true });
+mkdirSync("src/data", { recursive: true });
 writeFileSync(outPath, JSON.stringify(daily, null, 2));
 
 // ---------------------------------------------------------------------------
@@ -215,10 +108,10 @@ writeFileSync(songListPath, JSON.stringify(uniqueSongList, null, 2));
 console.log(`  Song list: ${uniqueSongList.length} unique songs for autocomplete`);
 
 console.log(
-  `Generated daily #${challengeNumber} for ${today}: ${entry.title} by ${entry.artist}`,
+  `Generated daily #${daily.challengeNumber} for ${today}: ${entry.title} by ${entry.artist}`,
 );
 console.log(`  Clip: ${entry.startMs}ms – ${entry.startMs + 5000}ms`);
-console.log(`  Notes in clip: ${clip.notes.length}`);
+console.log(`  Notes in clip: ${daily.clip.notes.length}`);
 
 // ---------------------------------------------------------------------------
 // Warn if schedule is running low

@@ -41,6 +41,17 @@ export default function ChartHighway({
     stateRef.current.audioEnabled = audioEnabled && !audioManager.isMuted();
   }, [notes, clipDurationMs, songStartMs, audioEnabled]);
 
+  // Set canvas dimensions once on mount (resizing on every play causes expensive layout reflow)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = DEFAULT_CONFIG.canvasWidth * dpr;
+    canvas.height = DEFAULT_CONFIG.canvasHeight * dpr;
+    const ctx = canvas.getContext("2d");
+    if (ctx) ctx.scale(dpr, dpr);
+  }, []);
+
   // Initialize audio on component mount to avoid first-note delay
   useEffect(() => {
     audioManager.initialize().catch(console.error);
@@ -65,15 +76,10 @@ export default function ChartHighway({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = DEFAULT_CONFIG.canvasWidth * dpr;
-    canvas.height = DEFAULT_CONFIG.canvasHeight * dpr;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     stateRef.current.playedNotes.clear(); // Reset played notes on new playback
 
-    ctx.scale(dpr, dpr);
     stateRef.current.startTime = performance.now();
 
     function loop(now: number) {
@@ -98,14 +104,8 @@ export default function ChartHighway({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = DEFAULT_CONFIG.canvasWidth * dpr;
-    canvas.height = DEFAULT_CONFIG.canvasHeight * dpr;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-
-    ctx.scale(dpr, dpr);
 
     // Render at time 0 to show the initial state of the clip
     const fakeState: RendererState = {
