@@ -142,7 +142,7 @@ const nextEntry = schedule
   .filter((e) => e.date > today)
   .sort((a, b) => a.date.localeCompare(b.date))[0];
 const nextChallengeAt = nextEntry
-  ? `${nextEntry.date}T00:00:00Z` // midnight UTC
+  ? `${nextEntry.date}T01:00:00Z` // 1am UTC
   : undefined;
 
 const daily: DailyChallenge = {

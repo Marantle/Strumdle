@@ -359,10 +359,17 @@ export default function ResultModal({
           {/* Countdown */}
           {countdown && (
             <div className="text-center">
-              <p className="text-xs text-muted-foreground">Next Strumdle in (UTC)</p>
-              <p className="text-2xl font-mono font-bold tracking-wider mt-0.5">
-                {countdown}
-              </p>
+              {countdown === "00:00:00" ? (
+                <>
+                  <p className="text-2xl font-mono font-bold tracking-wider mt-0.5">Soon™</p>
+                  <p className="text-xs text-muted-foreground mt-1">New Strumdle is on its way — hang tight</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs text-muted-foreground">Next Strumdle in (UTC)</p>
+                  <p className="text-2xl font-mono font-bold tracking-wider mt-0.5">{countdown}</p>
+                </>
+              )}
             </div>
           )}
         </div>
