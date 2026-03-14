@@ -13,6 +13,9 @@ export default defineConfig({
       injectRegister: "auto",
       workbox: {
         navigateFallbackDenylist: [/^\/api\//, /^\/visitorstats/],
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
       },
       manifest: {
         name: "Strumdle",
