@@ -152,7 +152,7 @@ export default function VisitorStats() {
 
   useEffect(() => {
     fetch("/api/visitorstats")
-      .then((r) => r.json<StatsData>())
+      .then((r) => r.json() as Promise<StatsData>)
       .then(setData)
       .catch((e) => setError(String(e)));
   }, []);
