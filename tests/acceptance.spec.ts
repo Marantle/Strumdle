@@ -18,7 +18,9 @@ async function makeGuess(page: Page, text: string) {
 }
 
 async function openGrid(page: Page) {
-  await page.locator("button", { hasText: "Past Challenges" }).click();
+  const btn = page.locator("button", { hasText: "Past Challenges" });
+  await btn.scrollIntoViewIfNeeded();
+  await btn.dispatchEvent("click");
 }
 
 async function assertGridStatus(page: Page, n: number, status: "solved" | "failed" | "in-progress" | "current" | "unplayed") {
