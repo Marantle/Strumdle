@@ -23,6 +23,7 @@ interface DayDetail {
   plays: number;
   solves: number;
   archivePlays: number;
+  firstTimers: number;
   attempts: Record<string, number>;
 }
 
@@ -225,11 +226,12 @@ export default function VisitorStats() {
       {/* Per-date stats */}
       {dayDetail && (
         <>
-          <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-4">
             <StatCard label="Plays" value={dayDetail.plays.toLocaleString()} />
             <StatCard label="Solves" value={dayDetail.solves.toLocaleString()} />
             <StatCard label="Solve rate" value={`${daySolveRate}%`} />
             <StatCard label="Archive plays" value={(dayDetail.archivePlays ?? 0).toLocaleString()} />
+            <StatCard label="First timers" value={(dayDetail.firstTimers ?? 0).toLocaleString()} />
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-8">
             <h2 className="text-sm font-semibold text-zinc-300 mb-3">Attempts distribution</h2>

@@ -32,7 +32,7 @@ export default function WhatsNewModal() {
   const [visible, setVisible] = useState(false);
   const lastSeen = getLastSeen();
   // null = first-timer (don't show); "" = never seen (show all); version string = show newer only
-  const [show, setShow] = useState(() => lastSeen !== null && lastSeen !== CURRENT_VERSION);
+  const [show, setShow] = useState(() => lastSeen !== null && lastSeen < CURRENT_VERSION);
 
   useEffect(() => {
     if (show) {

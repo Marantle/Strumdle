@@ -71,6 +71,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     request.headers.get("X-Forwarded-For")?.split(",")[0]?.trim() ??
     null;
 
+  let firstTimer = false;
+
   if (clientIp) {
     const ipHash = await sha256Hex(`${env.IP_HASH_SALT ?? ""}:${clientIp}`);
     const dedupeKey = `stats-ip:${body.date}:${ipHash}`;
@@ -80,6 +82,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       });
     }
     await env.STATS.put(dedupeKey, "1", { expirationTtl: 60 * 60 * 24 * 400 });
+
+    const everKey = `stats-ip-ever:${ipHash}`;
+    if (!await env.STATS.get(everKey)) {
+      firstTimer = true;
+      await env.STATS.put(everKey, "1"); // no expiry — permanent
+    }
   }
 
   const todayUtc = new Date().toISOString().split("T")[0];
@@ -87,7 +95,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
 
   env.ANALYTICS.writeDataPoint({
     indexes: [body.date],
-    blobs: [body.solved ? "solved" : "failed", isArchive],
+    blobs: [body.solved ? "solved" : "failed", isArchive, firstTimer ? "first" : ""],
     doubles: [body.attempts],
   });
 
@@ -123,11 +131,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
       index1       AS date,
       blob1        AS result,
       blob2        AS play_type,
+      blob3        AS player_type,
       double1      AS attempts,
       COUNT()      AS count
     FROM strumdle
     WHERE index1 = '${date}'
-    GROUP BY date, result, play_type, attempts
+    GROUP BY date, result, play_type, player_type, attempts
     ORDER BY attempts ASC
   `;
 
@@ -151,17 +160,19 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     });
   }
 
-  const { data } = await resp.json<{ data: { date: string; result: string; play_type: string; attempts: number; count: string }[] }>();
+  const { data } = await resp.json<{ data: { date: string; result: string; play_type: string; player_type: string; attempts: number; count: string }[] }>();
 
   let plays = 0;
   let solves = 0;
   let archivePlays = 0;
+  let firstTimers = 0;
   const attempts: Record<string, number> = {};
 
   for (const row of data) {
     const count = parseInt(row.count, 10);
     plays += count;
     if (row.play_type === "archive") archivePlays += count;
+    if (row.player_type === "first") firstTimers += count;
     if (row.result === "solved") {
       solves += count;
       const k = String(row.attempts);
@@ -169,7 +180,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     }
   }
 
-  return new Response(JSON.stringify({ date, plays, solves, archivePlays, attempts }), {
+  return new Response(JSON.stringify({ date, plays, solves, archivePlays, firstTimers, attempts }), {
     headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
 };

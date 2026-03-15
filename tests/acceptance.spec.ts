@@ -36,6 +36,7 @@ test.beforeEach(async ({ page }) => {
   await page.evaluate(() => {
     localStorage.clear();
     localStorage.setItem("strumdle-welcome-seen", "1");
+    localStorage.setItem("strumdle-whats-new-seen", "9999-12-31");
   });
 });
 

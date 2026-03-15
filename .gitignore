@@ -37,4 +37,7 @@ guitar_sounds/
 *.sw?
 
 original_songs/
+
+#tests
 test-results/
+.last-run.json
