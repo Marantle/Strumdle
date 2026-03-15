@@ -17,6 +17,10 @@ async function makeGuess(page: Page, text: string) {
   await page.getByRole("listitem").filter({ hasText: text }).first().click();
 }
 
+async function closeModal(page: Page) {
+  await page.getByRole("button", { name: "×" }).dispatchEvent("click");
+}
+
 async function openGrid(page: Page) {
   const btn = page.locator("button", { hasText: "Past Challenges" });
   await btn.scrollIntoViewIfNeeded();
@@ -45,14 +49,14 @@ test("full acceptance: mixed outcomes → grid states → back-and-forth navigat
   }
   await expect(page.getByText("Better luck next time")).toBeVisible();
   await expect(page.getByTestId("modal-song-title")).toHaveText("Mock Song 1");
-  await page.getByRole("button", { name: "×" }).click();
+  await closeModal(page);
 
   // #2 — Fail fast: 6 rapid skips
   await page.goto("/2");
   for (let i = 0; i < 6; i++) await page.getByRole("button", { name: "Skip" }).click();
   await expect(page.getByText("Better luck next time")).toBeVisible();
   await expect(page.getByTestId("modal-song-title")).toHaveText("Mock Song 2");
-  await page.getByRole("button", { name: "×" }).click();
+  await closeModal(page);
 
   // #3 — Succeed fast: correct on first guess
   await page.goto("/3");
@@ -60,7 +64,7 @@ test("full acceptance: mixed outcomes → grid states → back-and-forth navigat
   await expect(page.getByText("Nice one!")).toBeVisible();
   await expect(page.getByText("You got it in 1")).toBeVisible();
   await expect(page.getByTestId("modal-song-title")).toHaveText("Mock Song 3");
-  await page.getByRole("button", { name: "×" }).click();
+  await closeModal(page);
 
   // #4 — Succeed after 2 wrong guesses
   await page.goto("/4");
@@ -70,7 +74,7 @@ test("full acceptance: mixed outcomes → grid states → back-and-forth navigat
   await expect(page.getByText("Nice one!")).toBeVisible();
   await expect(page.getByText("You got it in 3")).toBeVisible();
   await expect(page.getByTestId("modal-song-title")).toHaveText("Mock Song 4");
-  await page.getByRole("button", { name: "×" }).click();
+  await closeModal(page);
 
   // #5 (today) — In-progress: 3 wrong guesses, game still running
   await page.goto("/");
