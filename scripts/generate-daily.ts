@@ -92,6 +92,9 @@ for (const dir of readdirSync("data/songs")) {
     }
   }
 }
+// Always include the placeholder #1 song so it can be guessed on that challenge
+songListEntries.push({ title: "Dev Riff", artist: "Strumdle", game: "Strumdle" });
+
 // Deduplicate by title (case-insensitive)
 const seen = new Set<string>();
 const uniqueSongList = songListEntries
