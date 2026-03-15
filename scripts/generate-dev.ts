@@ -8,7 +8,6 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { dirname } from "path";
 import { parseChart } from "./parser/chartParser.ts";
 import { normalize, sliceClip } from "./parser/normalizer.ts";
 import type { DailyChallenge, SongListEntry } from "../src/types.ts";

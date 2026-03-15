@@ -137,7 +137,10 @@ export default function VisitorStats() {
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(todayUTC);
   const [dayDetail, setDayDetail] = useState<DayDetail | null>(null);
-  const [dayLoading, setDayLoading] = useState(false);
+  const [loadedDate, setLoadedDate] = useState<string | null>(null);
+
+  // loading is derived: true whenever selectedDate hasn't been fetched yet
+  const dayLoading = selectedDate !== loadedDate;
 
   useEffect(() => {
     fetch("/api/visitorstats")
@@ -147,12 +150,10 @@ export default function VisitorStats() {
   }, []);
 
   useEffect(() => {
-    setDayLoading(true);
-    setDayDetail(null);
     fetch(`/api/analytics?date=${selectedDate}`)
       .then((r) => r.json() as Promise<DayDetail>)
-      .then((d) => { setDayDetail(d); setDayLoading(false); })
-      .catch(() => setDayLoading(false));
+      .then((d) => { setDayDetail(d); setLoadedDate(selectedDate); })
+      .catch(() => { setDayDetail(null); setLoadedDate(selectedDate); });
   }, [selectedDate]);
 
   if (error) {

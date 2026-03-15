@@ -1,13 +1,15 @@
 import { useParams, Link } from "react-router-dom";
 import App from "./App.tsx";
 import type { DailyChallenge, SongListEntry } from "./types.ts";
+import { ChallengeContext } from "./context/ChallengeContext.tsx";
 
 interface Props {
   archive: Record<string, DailyChallenge>;
   songList: SongListEntry[];
+  latestChallengeNumber: number;
 }
 
-export default function ArchiveRoute({ archive, songList }: Props) {
+export default function ArchiveRoute({ archive, songList, latestChallengeNumber }: Props) {
   const { challengeNumber } = useParams<{ challengeNumber: string }>();
   const challenge = challengeNumber ? archive[challengeNumber] : undefined;
 
@@ -22,5 +24,9 @@ export default function ArchiveRoute({ archive, songList }: Props) {
     );
   }
 
-  return <App challenge={challenge} songList={songList} />;
+  return (
+    <ChallengeContext.Provider value={{ challenge, songList, latestChallengeNumber }}>
+      <App key={challenge.challengeNumber} />
+    </ChallengeContext.Provider>
+  );
 }

@@ -17,7 +17,8 @@
     "schedule:curated": "tsx scripts/build-curated-schedule.ts",
     "reschedule": "tsx scripts/reschedule.ts",
     "import-songs": "tsx scripts/import-songs.ts",
-    "deploy": "npm run build && wrangler pages deploy dist"
+    "deploy": "npm run build && wrangler pages deploy dist",
+    "test": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260312.1",
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.2.1",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.7",

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import { useChallengeContext } from "../context/ChallengeContext";
 import type { DailyResult } from "../types";
 import type { GuessEntry } from "./GuessList";
 
@@ -103,7 +105,13 @@ function useCountdown(targetIso?: string) {
   return timeLeft;
 }
 
-function PastChallengesGrid({ current }: { current: number }) {
+function getChallengeDate(n: number, baseN: number, baseDate: string): string {
+  const d = new Date(baseDate);
+  d.setUTCDate(d.getUTCDate() + (n - baseN));
+  return d.toISOString().split("T")[0];
+}
+
+function PastChallengesGrid({ current, total, baseDate, onClose }: { current: number; total: number; baseDate: string; onClose: () => void }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -117,23 +125,41 @@ function PastChallengesGrid({ current }: { current: number }) {
       </button>
       {open && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {Array.from({ length: current }, (_, i) => i + 1).map((n) => {
+          {Array.from({ length: total }, (_, i) => i + 1).map((n) => {
             const isCurrent = n === current;
-            return isCurrent ? (
-              <span
-                key={n}
-                className="w-9 h-9 flex items-center justify-center rounded-md text-xs font-bold bg-primary text-primary-foreground"
-              >
+            const date = getChallengeDate(n, current, baseDate);
+            const saved = (() => {
+              try {
+                const s = localStorage.getItem(`daily-${date}`);
+                return s ? JSON.parse(s) as { solved: boolean; guesses: string[] } : null;
+              } catch { return null; }
+            })();
+            let status: "solved" | "failed" | "in-progress" | null = null;
+            if (saved) {
+              if (saved.solved) status = "solved";
+              else if (saved.guesses.length >= 6) status = "failed";
+              else if (saved.guesses.length > 0) status = "in-progress";
+            }
+
+            const baseClass = "w-9 h-9 flex items-center justify-center rounded-md text-xs font-bold transition-colors";
+            if (isCurrent) {
+              return (
+                <span key={n} data-testid={`challenge-${n}`} data-status="current" className={`${baseClass} bg-primary text-primary-foreground`}>
+                  #{n}
+                </span>
+              );
+            }
+            const colorClass = status === "solved"
+              ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+              : status === "failed"
+                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                : status === "in-progress"
+                  ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+                  : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground";
+            return (
+              <Link key={n} data-testid={`challenge-${n}`} data-status={status ?? "unplayed"} to={n === total ? "/" : `/${n}`} onClick={onClose} className={`${baseClass} font-medium ${colorClass}`}>
                 #{n}
-              </span>
-            ) : (
-              <a
-                key={n}
-                href={`/${n}`}
-                className="w-9 h-9 flex items-center justify-center rounded-md text-xs font-medium bg-muted hover:bg-muted/70 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                #{n}
-              </a>
+              </Link>
             );
           })}
         </div>
@@ -156,6 +182,7 @@ export default function ResultModal({
   maxGuesses,
   nextChallengeAt,
 }: ResultModalProps) {
+  const { latestChallengeNumber } = useChallengeContext();
   const [shareState, setShareState] = useState<"idle" | "copied" | "shared">("idle");
   const [visible, setVisible] = useState(false);
   const [dailyStats, setDailyStats] = useState<DailyStatsResponse | null>(null);
@@ -270,7 +297,7 @@ export default function ResultModal({
       onClick={onClose}
     >
       <div
-        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transition-all duration-500 ${
+        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-all duration-500 ${
           visible
             ? "opacity-100"
             : "opacity-0"
@@ -310,7 +337,7 @@ export default function ResultModal({
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">
             {solved ? "You guessed" : "The answer was"}
           </p>
-          <p className="text-lg font-bold leading-tight">{title}</p>
+          <p className="text-lg font-bold leading-tight" data-testid="modal-song-title">{title}</p>
           <p className="text-sm text-muted-foreground">{artist}</p>
         </div>
 
@@ -429,7 +456,7 @@ export default function ResultModal({
           )}
 
           {/* Past challenges grid */}
-          {challengeNumber > 1 && <PastChallengesGrid current={challengeNumber} />}
+          {latestChallengeNumber > 1 && <PastChallengesGrid current={challengeNumber} total={latestChallengeNumber} baseDate={result.date} onClose={onClose} />}
         </div>
       </div>
     </div>

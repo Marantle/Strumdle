@@ -1,0 +1,26 @@
+{
+  "1": {
+    "date": "2020-01-01", "challengeNumber": 1,
+    "answerObfuscated": "TW9jayBTb25nIDF8TW9jayBBcnRpc3QgMQ==",
+    "aliasesObfuscated": [], "hints": [], "maxGuesses": 6,
+    "clip": { "track": "guitar_expert", "clipStartMs": 0, "clipEndMs": 7000, "tempos": [{ "timeMs": 0, "bpm": 120 }], "notes": [] }
+  },
+  "2": {
+    "date": "2020-01-02", "challengeNumber": 2,
+    "answerObfuscated": "TW9jayBTb25nIDJ8TW9jayBBcnRpc3QgMg==",
+    "aliasesObfuscated": [], "hints": [], "maxGuesses": 6,
+    "clip": { "track": "guitar_expert", "clipStartMs": 0, "clipEndMs": 7000, "tempos": [{ "timeMs": 0, "bpm": 120 }], "notes": [] }
+  },
+  "3": {
+    "date": "2020-01-03", "challengeNumber": 3,
+    "answerObfuscated": "TW9jayBTb25nIDN8TW9jayBBcnRpc3QgMw==",
+    "aliasesObfuscated": [], "hints": [], "maxGuesses": 6,
+    "clip": { "track": "guitar_expert", "clipStartMs": 0, "clipEndMs": 7000, "tempos": [{ "timeMs": 0, "bpm": 120 }], "notes": [] }
+  },
+  "4": {
+    "date": "2020-01-04", "challengeNumber": 4,
+    "answerObfuscated": "TW9jayBTb25nIDR8TW9jayBBcnRpc3QgNA==",
+    "aliasesObfuscated": [], "hints": [], "maxGuesses": 6,
+    "clip": { "track": "guitar_expert", "clipStartMs": 0, "clipEndMs": 7000, "tempos": [{ "timeMs": 0, "bpm": 120 }], "notes": [] }
+  }
+}

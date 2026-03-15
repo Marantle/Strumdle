@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "fnm env --use-on-cd | Out-String | Invoke-Expression; npx @playwright/mcp@latest"
+      ]
+    }
+  }
+}

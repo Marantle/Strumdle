@@ -9,6 +9,7 @@ import AudioControls from "./components/AudioControls";
 import { Button } from "./components/ui/button";
 import { checkGuess, revealAnswer } from "./lib/guess/match";
 import { audioManager } from "./lib/audio/audioManager";
+import { useChallengeContext } from "./context/ChallengeContext";
 import type { DailyChallenge, DailyResult, SongListEntry, GameState } from "./types";
 
 
@@ -76,7 +77,8 @@ function getInitialState(
   return { gameState: "ready", guesses: [], solved: false, solvedOnAttempt: null };
 }
 
-export default function App({ challenge, songList }: { challenge: DailyChallenge; songList: SongListEntry[] }) {
+export default function App() {
+  const { challenge, songList } = useChallengeContext();
   const saved = loadResult(challenge.date);
   const initial = getInitialState(saved, challenge, songList);
 
@@ -89,7 +91,11 @@ export default function App({ challenge, songList }: { challenge: DailyChallenge
   const [modalOpen, setModalOpen] = useState(initial.gameState === "done");
   const [showExtension, setShowExtension] = useState(false);
   const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(
+    () =>
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true,
+  );
 
   const isPlaying = gameState === "playing";
   const isDone = gameState === "done";
@@ -119,15 +125,9 @@ export default function App({ challenge, songList }: { challenge: DailyChallenge
       solvedOnAttempt,
     };
     saveResult(result);
-  }, [guessTitles, solved, solvedOnAttempt]);
+  }, [challenge.date, guessTitles, solved, solvedOnAttempt]);
 
   useEffect(() => {
-    const displayModeStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    const iosStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
-    if (displayModeStandalone || iosStandalone) {
-      setIsInstalled(true);
-    }
-
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
       setInstallPromptEvent(event as BeforeInstallPromptEvent);
@@ -178,7 +178,7 @@ export default function App({ challenge, songList }: { challenge: DailyChallenge
       setShowExtension(true);
       setTimeout(() => setShowExtension(false), 1500);
     }
-  }, [guesses]);
+  }, [guesses, challenge.maxGuesses, challenge.date]);
 
   const handleGuess = useCallback(
     (guess: string) => {
@@ -206,7 +206,7 @@ export default function App({ challenge, songList }: { challenge: DailyChallenge
         setTimeout(() => setShowExtension(false), 2000);
       }
     },
-    [guesses],
+    [guesses, challenge, songList],
   );
 
   const answer = isDone ? revealAnswer(challenge) : null;
@@ -268,7 +268,6 @@ export default function App({ challenge, songList }: { challenge: DailyChallenge
         onSkip={handleSkip}
         disabled={!canGuess || isPlaying}
         attemptsLeft={challenge.maxGuesses - guesses.length}
-        songList={songList}
       />
 
       {/* Previous guesses */}
