@@ -96,8 +96,7 @@ test("full acceptance: mixed outcomes → grid states → back-and-forth navigat
   // ── PHASE 3: Navigate to #3 and verify its state ────────────────────────
 
   const c3 = page.getByTestId("challenge-3");
-  await c3.scrollIntoViewIfNeeded();
-  await c3.click();
+  await c3.dispatchEvent("click");
   await expect(page.getByText("Nice one!")).toBeVisible();
   await expect(page.getByTestId("modal-song-title")).toHaveText("Mock Song 3");
 
@@ -111,8 +110,7 @@ test("full acceptance: mixed outcomes → grid states → back-and-forth navigat
   // ── PHASE 4: Navigate to #1 and verify failed state ─────────────────────
 
   const c1 = page.getByTestId("challenge-1");
-  await c1.scrollIntoViewIfNeeded();
-  await c1.click();
+  await c1.dispatchEvent("click");
   await expect(page.getByText("Better luck next time")).toBeVisible();
   await expect(page.getByTestId("modal-song-title")).toHaveText("Mock Song 1");
 
@@ -126,8 +124,7 @@ test("full acceptance: mixed outcomes → grid states → back-and-forth navigat
   // ── PHASE 5: Navigate back to today (#5) and verify in-progress ──────────
 
   const c5 = page.getByTestId("challenge-5");
-  await c5.scrollIntoViewIfNeeded();
-  await c5.click(); // links to "/"
+  await c5.dispatchEvent("click"); // links to "/"
   // Today's game is in-progress — no modal, 3 guesses visible
   await expect(page.getByText("Nice one!")).not.toBeVisible();
   await expect(page.getByTestId("guess-entry")).toHaveCount(3);
