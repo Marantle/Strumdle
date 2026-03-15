@@ -1,0 +1,10 @@
+# Service worker and entry point must never be cached so browsers
+# always detect new deploys.
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/registerSW.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
