@@ -5,7 +5,7 @@
  * and difficulty/instrument tracks such as [ExpertSingle].
  */
 
-import type { Lane, TrackName } from '../../src/types.ts';
+import type { TrackName } from '../../src/types.ts';
 
 // ---------------------------------------------------------------------------
 // Types

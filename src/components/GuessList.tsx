@@ -20,6 +20,7 @@ export default function GuessList({ guesses, maxGuesses, solved }: GuessListProp
         return (
           <div
             key={i}
+            data-testid="guess-entry"
             className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-md ${
               isCorrect ? "bg-green-500/15" : "bg-muted/30"
             }`}

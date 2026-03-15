@@ -12,7 +12,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       injectRegister: "auto",
       workbox: {
-        navigateFallbackDenylist: [/^\/api\//, /^\/visitorstats/],
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/api\//, /^\/visitorstats/, /^\/challenges\//],
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,

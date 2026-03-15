@@ -13,6 +13,7 @@ dist
 # Generated at build time — never commit
 src/data/today.json
 src/data/songList.json
+src/data/archive.json
 
 # Private data — lives in a separate private repo (submodule at data/)
 # schedule.json and songs/ are inside data/ now
@@ -36,3 +37,7 @@ guitar_sounds/
 *.sw?
 
 original_songs/
+
+#tests
+test-results/
+.last-run.json

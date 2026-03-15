@@ -1,0 +1,10 @@
+{
+  "date": "2020-01-05",
+  "challengeNumber": 5,
+  "answerObfuscated": "TW9jayBTb25nIDV8TW9jayBBcnRpc3QgNQ==",
+  "aliasesObfuscated": [],
+  "hints": [],
+  "maxGuesses": 6,
+  "nextChallengeAt": "2020-01-06T01:00:00.000Z",
+  "clip": { "track": "guitar_expert", "clipStartMs": 0, "clipEndMs": 7000, "tempos": [{ "timeMs": 0, "bpm": 120 }], "notes": [] }
+}

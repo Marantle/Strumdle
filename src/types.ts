@@ -9,7 +9,7 @@ export interface DailyChallenge {
   hints: string[]; // up to 3 hints, revealed after guesses 2, 3, 4
   maxGuesses: number; // 6
   game?: string; // which Guitar Hero game, e.g. "Guitar Hero II"
-  nextChallengeAt?: string; // ISO 8601 UTC timestamp for next daily build
+  nextChallengeAt?: string | undefined; // ISO 8601 UTC timestamp for next daily build
 }
 
 export interface SongListEntry {

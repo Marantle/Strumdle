@@ -2,14 +2,13 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import Fuse from "fuse.js";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import type { SongListEntry } from "../types";
+import { useChallengeContext } from "../context/ChallengeContext";
 
 interface GuessInputProps {
   onGuess: (guess: string) => void;
   onSkip: () => void;
   disabled: boolean;
   attemptsLeft: number;
-  songList: SongListEntry[];
 }
 
 export default function GuessInput({
@@ -17,8 +16,8 @@ export default function GuessInput({
   onSkip,
   disabled,
   attemptsLeft,
-  songList,
 }: GuessInputProps) {
+  const { songList } = useChallengeContext();
   const [value, setValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
