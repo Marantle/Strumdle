@@ -82,9 +82,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     await env.STATS.put(dedupeKey, "1", { expirationTtl: 60 * 60 * 24 * 400 });
   }
 
+  const todayUtc = new Date().toISOString().split("T")[0];
+  const isArchive = body.date !== todayUtc ? "archive" : "";
+
   env.ANALYTICS.writeDataPoint({
     indexes: [body.date],
-    blobs: [body.solved ? "solved" : "failed"],
+    blobs: [body.solved ? "solved" : "failed", isArchive],
     doubles: [body.attempts],
   });
 
@@ -119,11 +122,12 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     SELECT
       index1       AS date,
       blob1        AS result,
+      blob2        AS play_type,
       double1      AS attempts,
       COUNT()      AS count
     FROM strumdle
     WHERE index1 = '${date}'
-    GROUP BY date, result, attempts
+    GROUP BY date, result, play_type, attempts
     ORDER BY attempts ASC
   `;
 
@@ -147,15 +151,17 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     });
   }
 
-  const { data } = await resp.json<{ data: { date: string; result: string; attempts: number; count: string }[] }>();
+  const { data } = await resp.json<{ data: { date: string; result: string; play_type: string; attempts: number; count: string }[] }>();
 
   let plays = 0;
   let solves = 0;
+  let archivePlays = 0;
   const attempts: Record<string, number> = {};
 
   for (const row of data) {
     const count = parseInt(row.count, 10);
     plays += count;
+    if (row.play_type === "archive") archivePlays += count;
     if (row.result === "solved") {
       solves += count;
       const k = String(row.attempts);
@@ -163,7 +169,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     }
   }
 
-  return new Response(JSON.stringify({ date, plays, solves, attempts }), {
+  return new Response(JSON.stringify({ date, plays, solves, archivePlays, attempts }), {
     headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
 };

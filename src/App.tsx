@@ -5,6 +5,7 @@ import GuessList from "./components/GuessList";
 import type { GuessEntry } from "./components/GuessList";
 import ResultModal from "./components/ResultModal";
 import WelcomeModal from "./components/WelcomeModal";
+import WhatsNewModal from "./components/WhatsNewModal";
 import AudioControls from "./components/AudioControls";
 import { Button } from "./components/ui/button";
 import { checkGuess, revealAnswer } from "./lib/guess/match";
@@ -282,6 +283,9 @@ export default function App() {
 
       {/* Welcome modal (first visit only) */}
       <WelcomeModal />
+
+      {/* What's new modal (returning users, once per version) */}
+      <WhatsNewModal />
 
       {/* Result modal */}
       {isDone && answer && (

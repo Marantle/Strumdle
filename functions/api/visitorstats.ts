@@ -55,9 +55,10 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       // Daily totals for the last 30 days
       queryAnalytics(env.CF_ACCOUNT_ID, env.CF_API_TOKEN, `
         SELECT
-          toDate(timestamp)        AS date,
-          COUNT()                  AS plays,
-          countIf(blob1 = 'solved') AS solves
+          toDate(timestamp)             AS date,
+          COUNT()                       AS plays,
+          countIf(blob1 = 'solved')     AS solves,
+          countIf(blob2 = 'archive')    AS archive_plays
         FROM strumdle
         WHERE timestamp >= now() - INTERVAL '30' DAY
         GROUP BY date
@@ -80,6 +81,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ env }) => {
       date: String(r.date),
       plays: Number(r.plays),
       solves: Number(r.solves),
+      archivePlays: Number(r.archive_plays ?? 0),
     }));
 
     // Fill in all 24 hours (missing hours = 0 plays)

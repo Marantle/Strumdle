@@ -4,6 +4,7 @@ interface DailyEntry {
   date: string;
   plays: number;
   solves: number;
+  archivePlays: number;
 }
 
 interface HourlyEntry {
@@ -21,6 +22,7 @@ interface DayDetail {
   date: string;
   plays: number;
   solves: number;
+  archivePlays: number;
   attempts: Record<string, number>;
 }
 
@@ -223,10 +225,11 @@ export default function VisitorStats() {
       {/* Per-date stats */}
       {dayDetail && (
         <>
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-4 gap-3 mb-4">
             <StatCard label="Plays" value={dayDetail.plays.toLocaleString()} />
             <StatCard label="Solves" value={dayDetail.solves.toLocaleString()} />
             <StatCard label="Solve rate" value={`${daySolveRate}%`} />
+            <StatCard label="Archive plays" value={(dayDetail.archivePlays ?? 0).toLocaleString()} />
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-8">
             <h2 className="text-sm font-semibold text-zinc-300 mb-3">Attempts distribution</h2>
@@ -259,6 +262,18 @@ export default function VisitorStats() {
           labelKey="date"
           valueKey="plays"
           color="#22c55e"
+          formatLabel={(v) => String(v).slice(5)}
+        />
+      </div>
+
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4">
+        <h2 className="text-sm font-semibold text-zinc-300 mb-1">Archive plays (last 30 days)</h2>
+        <p className="text-xs text-zinc-600 mb-3">Plays of past challenges on each calendar day</p>
+        <BarChart
+          data={data.daily as unknown as Record<string, number | string>[]}
+          labelKey="date"
+          valueKey="archivePlays"
+          color="#f97316"
           formatLabel={(v) => String(v).slice(5)}
         />
       </div>
