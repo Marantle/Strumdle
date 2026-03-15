@@ -5,6 +5,7 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:5174",
     trace: "on-first-retry",
+    video: "retain-on-failure",
   },
   projects: [
     { name: "chrome",        use: { ...devices["Desktop Chrome"] } },
