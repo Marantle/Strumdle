@@ -331,34 +331,34 @@ interface SampleSetPaths {
 const SAMPLE_SETS: Partial<Record<SoundId, SampleSetPaths>> = {
   real: {
     hits: [
-      "/sounds/hit0.ogg",
-      "/sounds/hit1.ogg",
-      "/sounds/hit2.ogg",
-      "/sounds/hit3.ogg",
-      "/sounds/hit4.ogg",
+      "/sounds/hit0.mp3",
+      "/sounds/hit1.mp3",
+      "/sounds/hit2.mp3",
+      "/sounds/hit3.mp3",
+      "/sounds/hit4.mp3",
     ],
     sustains: [
-      "/sounds/sustain0.ogg",
-      "/sounds/sustain1.ogg",
-      "/sounds/sustain2.ogg",
-      "/sounds/sustain3.ogg",
-      "/sounds/sustain4.ogg",
+      "/sounds/sustain0.mp3",
+      "/sounds/sustain1.mp3",
+      "/sounds/sustain2.mp3",
+      "/sounds/sustain3.mp3",
+      "/sounds/sustain4.mp3",
     ],
   },
   funk: {
     hits: [
-      "/sounds/funk-hit0.ogg",
-      "/sounds/funk-hit1.ogg",
-      "/sounds/funk-hit2.ogg",
-      "/sounds/funk-hit3.ogg",
-      "/sounds/funk-hit4.ogg",
+      "/sounds/funk-hit0.mp3",
+      "/sounds/funk-hit1.mp3",
+      "/sounds/funk-hit2.mp3",
+      "/sounds/funk-hit3.mp3",
+      "/sounds/funk-hit4.mp3",
     ],
     sustains: [
-      "/sounds/funk-sustain0.ogg",
-      "/sounds/funk-sustain1.ogg",
-      "/sounds/funk-sustain2.ogg",
-      "/sounds/funk-sustain3.ogg",
-      "/sounds/funk-sustain4.ogg",
+      "/sounds/funk-sustain0.mp3",
+      "/sounds/funk-sustain1.mp3",
+      "/sounds/funk-sustain2.mp3",
+      "/sounds/funk-sustain3.mp3",
+      "/sounds/funk-sustain4.mp3",
     ],
   },
 };
@@ -418,7 +418,7 @@ function saveAudioPrefs(laneSounds: SoundId[], muted: boolean) {
 class AudioManager {
   private initialized = false;
   private muted: boolean;
-  private volume = 0.7;
+  private volume = 0.13;
   private audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
 
@@ -453,8 +453,9 @@ class AudioManager {
       getNoiseBuffer(this.audioContext);
       this.initialized = true;
 
-      // Decode prefetched samples (network already done, just decode)
-      await this.loadSamples();
+      // Decode prefetched samples in the background — don't block initialize()
+      // so the first user gesture returns quickly and doesn't inflate INP
+      this.loadSamples().catch(console.error);
     } catch (error) {
       console.error("Failed to initialize audio:", error);
       throw error;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useChallengeContext } from "../context/ChallengeContext";
@@ -113,9 +113,14 @@ function getChallengeDate(n: number, baseN: number, baseDate: string): string {
 
 function PastChallengesGrid({ current, total, baseDate, onClose }: { current: number; total: number; baseDate: string; onClose: () => void }) {
   const [open, setOpen] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (open) gridRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [open]);
 
   return (
-    <div className="border-t border-border/50 pt-3">
+    <div ref={gridRef} className="border-t border-border/50 pt-3">
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -186,7 +191,25 @@ export default function ResultModal({
   const [shareState, setShareState] = useState<"idle" | "copied" | "shared">("idle");
   const [visible, setVisible] = useState(false);
   const [dailyStats, setDailyStats] = useState<DailyStatsResponse | null>(null);
+  const [hasScrollBelow, setHasScrollBelow] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const countdown = useCountdown(nextChallengeAt);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const update = () => {
+      setHasScrollBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 8);
+    };
+    update();
+    el.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener("scroll", update);
+      ro.disconnect();
+    };
+  }, [open]);
 
   // Animate in
   useEffect(() => {
@@ -297,6 +320,7 @@ export default function ResultModal({
       onClick={onClose}
     >
       <div
+        ref={scrollRef}
         className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-all duration-500 ${
           visible
             ? "opacity-100"
@@ -377,6 +401,8 @@ export default function ResultModal({
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
             Today&apos;s Solve Distribution
           </p>
+          {/* min-height reserves the full loaded height so the modal doesn't shift when stats arrive */}
+          <div style={{ minHeight: `${maxGuesses * 26 + 28}px` }}>
           {dailyStats === null ? (
             <div className="space-y-1.5">
               {Array.from({ length: maxGuesses }, (_, i) => (
@@ -414,6 +440,7 @@ export default function ResultModal({
               </p>
             </div>
           )}
+          </div>
         </div>
 
         {/* Actions */}
@@ -458,6 +485,13 @@ export default function ResultModal({
           {/* Past challenges grid */}
           {latestChallengeNumber > 1 && <PastChallengesGrid current={challengeNumber} total={latestChallengeNumber} baseDate={result.date} onClose={onClose} />}
         </div>
+
+        {/* Scroll hint */}
+        {hasScrollBelow && (
+          <div className="sticky bottom-0 flex justify-center py-2 bg-gradient-to-t from-card to-transparent pointer-events-none">
+            <span className="animate-bounce text-lg text-muted-foreground">↓</span>
+          </div>
+        )}
       </div>
     </div>
   );

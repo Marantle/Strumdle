@@ -129,6 +129,7 @@ test("full acceptance: mixed outcomes → grid states → back-and-forth navigat
 
   const c5 = page.getByTestId("challenge-5");
   await c5.dispatchEvent("click"); // links to "/"
+  await page.waitForURL("/"); // wait for cross-route navigation to settle before asserting
   // Today's game is in-progress — no modal, 3 guesses visible
   await expect(page.getByText("Nice one!")).not.toBeVisible();
   await expect(page.getByTestId("guess-entry")).toHaveCount(3);
