@@ -3,15 +3,16 @@
  * GET  /api/analytics?date=2026-03-12  — query Analytics Engine for daily stats
  * POST /api/analytics                  — record a game completion
  *
- * Requires env vars: CF_ACCOUNT_ID, CF_API_TOKEN, ANALYTICS, STATS, IP_HASH_SALT
+ * Requires env vars: CF_ACCOUNT_ID, CF_API_TOKEN, ANALYTICS
+ * CF_ACCOUNT_ID + CF_API_TOKEN are also used on POST to detect first-time players via
+ * a single Analytics Engine SQL query (gracefully skipped if credentials are absent).
  */
 
 interface Env {
   CF_ACCOUNT_ID: string;
   CF_API_TOKEN: string;
   ANALYTICS: AnalyticsEngineDataset;
-  STATS: KVNamespace;
-  IP_HASH_SALT?: string;
+  IP_HASH_SALT: string;
 }
 
 interface GameResult {
@@ -65,39 +66,53 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     });
   }
 
-  // IP deduplication
-  const clientIp =
-    request.headers.get("CF-Connecting-IP") ??
-    request.headers.get("X-Forwarded-For")?.split(",")[0]?.trim() ??
-    null;
-
-  let firstTimer = false;
-
-  if (clientIp) {
-    const ipHash = await sha256Hex(`${env.IP_HASH_SALT ?? ""}:${clientIp}`);
-    const dedupeKey = `stats-ip:${body.date}:${ipHash}`;
-    if (await env.STATS.get(dedupeKey)) {
-      return new Response(JSON.stringify({ ok: true, deduped: true }), {
-        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-      });
-    }
-    await env.STATS.put(dedupeKey, "1", { expirationTtl: 60 * 60 * 24 * 400 });
-
-    const everKey = `stats-ip-ever:${ipHash}`;
-    if (!await env.STATS.get(everKey)) {
-      firstTimer = true;
-      await env.STATS.put(everKey, "1"); // no expiry — permanent
-    }
-  }
-
   const todayUtc = new Date().toISOString().split("T")[0];
   const isArchive = body.date !== todayUtc ? "archive" : "";
 
-  env.ANALYTICS.writeDataPoint({
-    indexes: [body.date],
-    blobs: [body.solved ? "solved" : "failed", isArchive, firstTimer ? "first" : ""],
-    doubles: [body.attempts],
-  });
+  // Detect first-time players via one Analytics Engine SQL query.
+  // Gracefully skipped if credentials are absent or the query fails.
+  let playerType = "";
+  const clientIp = request.headers.get("CF-Connecting-IP");
+  if (clientIp && env.CF_ACCOUNT_ID && env.CF_API_TOKEN) {
+    try {
+      const ipHash = await sha256Hex((env.IP_HASH_SALT ?? "") + clientIp);
+      const checkSql = `SELECT COUNT() AS cnt FROM strumdle WHERE index2 = '${ipHash}'`;
+      const checkResp = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${env.CF_API_TOKEN}`,
+            "Content-Type": "text/plain",
+          },
+          body: checkSql,
+        }
+      );
+      if (checkResp.ok) {
+        const checkData = await checkResp.json<{ data?: { cnt: string }[] }>();
+        const cnt = parseInt(checkData.data?.[0]?.cnt ?? "1", 10);
+        if (cnt === 0) playerType = "first";
+      }
+
+      env.ANALYTICS.writeDataPoint({
+        indexes: [body.date, ipHash],
+        blobs: [body.solved ? "solved" : "failed", isArchive, playerType],
+        doubles: [body.attempts],
+      });
+    } catch {
+      env.ANALYTICS.writeDataPoint({
+        indexes: [body.date],
+        blobs: [body.solved ? "solved" : "failed", isArchive],
+        doubles: [body.attempts],
+      });
+    }
+  } else {
+    env.ANALYTICS.writeDataPoint({
+      indexes: [body.date],
+      blobs: [body.solved ? "solved" : "failed", isArchive],
+      doubles: [body.attempts],
+    });
+  }
 
   return new Response(JSON.stringify({ ok: true }), {
     headers: { "Content-Type": "application/json", ...CORS_HEADERS },
@@ -160,7 +175,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     });
   }
 
-  const { data } = await resp.json<{ data: { date: string; result: string; play_type: string; player_type: string; attempts: number; count: string }[] }>();
+  const body = await resp.json<{ data?: { date: string; result: string; play_type: string; player_type: string; attempts: number; count: string }[] }>();
+  const data = body.data ?? [];
 
   let plays = 0;
   let solves = 0;

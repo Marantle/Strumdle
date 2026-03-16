@@ -32,14 +32,15 @@ const MOCK_ANALYTICS_PREV = {
 };
 
 async function setupMocks(page: Page, analyticsOverride?: object) {
+  const todayUTC = new Date().toISOString().split("T")[0];
   await page.route("**/api/visitorstats", (route) =>
     route.fulfill({ json: MOCK_VISITORSTATS }),
   );
   await page.route(/\/api\/analytics/, (route) => {
     const url = new URL(route.request().url());
     const date = url.searchParams.get("date") ?? "";
-    // Return prev-day data when the date ends in 14, otherwise default
-    const payload = date.endsWith("-14") ? MOCK_ANALYTICS_PREV : (analyticsOverride ?? MOCK_ANALYTICS_TODAY);
+    // Return today's mock for today's date, prev-day mock for any earlier date
+    const payload = date === todayUTC ? (analyticsOverride ?? MOCK_ANALYTICS_TODAY) : MOCK_ANALYTICS_PREV;
     return route.fulfill({ json: payload });
   });
 }
