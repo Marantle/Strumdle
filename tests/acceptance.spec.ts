@@ -133,3 +133,24 @@ test("full acceptance: mixed outcomes → grid states → back-and-forth navigat
   await expect(page.getByText("Nice one!")).not.toBeVisible();
   await expect(page.getByTestId("guess-entry")).toHaveCount(3);
 });
+
+test("View Results persists after replay: close modal → play → View Results still visible → clicking it stops playback and reopens modal", async ({ page }) => {
+  await page.goto("/3");
+  await makeGuess(page, "Mock Song 3");
+  await expect(page.getByText("Nice one!")).toBeVisible();
+  await closeModal(page);
+
+  // View Results should be visible after closing modal
+  await expect(page.getByRole("button", { name: "View Results" })).toBeVisible();
+
+  // Click Play — View Results must still be present while replaying
+  await page.getByRole("button", { name: /Play|Replay/ }).dispatchEvent("click");
+  await expect(page.getByRole("button", { name: "View Results" })).toBeVisible();
+
+  // Clicking View Results stops playback and reopens the modal
+  await page.getByRole("button", { name: "View Results" }).dispatchEvent("click");
+  await expect(page.getByText("Nice one!")).toBeVisible();
+  await expect(page.getByTestId("modal-song-title")).toHaveText("Mock Song 3");
+  // Stop button should be gone (playback stopped)
+  await expect(page.getByRole("button", { name: "Stop" })).not.toBeVisible();
+});

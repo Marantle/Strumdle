@@ -99,7 +99,7 @@ export default function App() {
   );
 
   const isPlaying = gameState === "playing";
-  const isDone = gameState === "done";
+  const isFinished = solved || guesses.length >= challenge.maxGuesses;
   const canGuess = gameState === "idle" || gameState === "ready";
 
   // Calculate visible clip duration based on number of guesses
@@ -210,7 +210,7 @@ export default function App() {
     [guesses, challenge, songList],
   );
 
-  const answer = isDone ? revealAnswer(challenge) : null;
+  const answer = isFinished ? revealAnswer(challenge) : null;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center px-4 py-8 gap-6">
@@ -274,9 +274,9 @@ export default function App() {
       {/* Previous guesses */}
       <GuessList guesses={guesses} maxGuesses={challenge.maxGuesses} solved={solved} />
 
-      {/* View Results button (when modal is closed but game is done) */}
-      {isDone && answer && !modalOpen && (
-        <Button variant="outline" onClick={() => setModalOpen(true)}>
+      {/* View Results button (when modal is closed but game is finished) */}
+      {isFinished && answer && !modalOpen && (
+        <Button variant="outline" onClick={() => { handleStop(); setModalOpen(true); }}>
           View Results
         </Button>
       )}
@@ -288,7 +288,7 @@ export default function App() {
       <WhatsNewModal />
 
       {/* Result modal */}
-      {isDone && answer && (
+      {isFinished && answer && (
         <ResultModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
