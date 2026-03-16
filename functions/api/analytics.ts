@@ -76,7 +76,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (clientIp && env.CF_ACCOUNT_ID && env.CF_API_TOKEN) {
     try {
       const ipHash = await sha256Hex((env.IP_HASH_SALT ?? "") + clientIp);
-      const checkSql = `SELECT COUNT() AS cnt FROM strumdle WHERE index2 = '${ipHash}'`;
+      const checkSql = `SELECT COUNT() AS cnt FROM strumdle WHERE blob4 = '${ipHash}'`;
       const checkResp = await fetch(
         `https://api.cloudflare.com/client/v4/accounts/${env.CF_ACCOUNT_ID}/analytics_engine/sql`,
         {
@@ -90,16 +90,19 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       );
       if (checkResp.ok) {
         const checkData = await checkResp.json<{ data?: { cnt: string }[] }>();
-        const cnt = parseInt(checkData.data?.[0]?.cnt ?? "1", 10);
+        const cnt = parseInt(checkData.data?.[0]?.cnt ?? "0", 10);
         if (cnt === 0) playerType = "first";
+      } else {
+        console.error("[analytics] first-timer query non-ok:", checkResp.status, await checkResp.text());
       }
 
       env.ANALYTICS.writeDataPoint({
-        indexes: [body.date, ipHash],
-        blobs: [body.solved ? "solved" : "failed", isArchive, playerType],
+        indexes: [body.date],
+        blobs: [body.solved ? "solved" : "failed", isArchive, playerType, ipHash],
         doubles: [body.attempts],
       });
-    } catch {
+    } catch (err) {
+      console.error("[analytics] first-timer check failed:", err);
       env.ANALYTICS.writeDataPoint({
         indexes: [body.date],
         blobs: [body.solved ? "solved" : "failed", isArchive],
