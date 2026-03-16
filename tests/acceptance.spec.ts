@@ -23,7 +23,6 @@ async function closeModal(page: Page) {
 
 async function openGrid(page: Page) {
   const btn = page.locator("button", { hasText: "Past Challenges" });
-  await btn.scrollIntoViewIfNeeded();
   await btn.dispatchEvent("click");
 }
 
