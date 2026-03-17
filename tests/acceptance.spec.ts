@@ -14,7 +14,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 async function makeGuess(page: Page, text: string) {
   await page.getByPlaceholder(/Guess the song/).fill(text);
-  await page.getByRole("listitem").filter({ hasText: text }).first().click();
+  await page.getByRole("listitem").filter({ hasText: text }).first().dispatchEvent("click");
 }
 
 async function closeModal(page: Page) {
