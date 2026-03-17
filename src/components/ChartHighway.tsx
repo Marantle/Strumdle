@@ -45,7 +45,7 @@ export default function ChartHighway({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = DEFAULT_CONFIG.canvasWidth * dpr;
     canvas.height = DEFAULT_CONFIG.canvasHeight * dpr;
     const ctx = canvas.getContext("2d");

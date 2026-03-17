@@ -8,7 +8,7 @@ Fallback URL: [strumdle.pages.dev](https://strumdle.pages.dev)
 
 ## How It Works
 
-Each day a new 5-second clip from a Guitar Hero chart is revealed. You get 6 guesses, and the clip extends by 2 seconds with each wrong guess. Match hints (artist, game) help narrow it down.
+Each day a new 7-second clip from a Guitar Hero chart is revealed. You get 6 guesses, and the clip extends by 2 seconds with each wrong guess. Match hints (artist, game) help narrow it down.
 
 ## Development
 
@@ -42,9 +42,9 @@ The `data/` directory is a git submodule pointing to a private repo containing t
 
 ## API Endpoints
 
-- `POST /api/analytics` — record a game completion (writes to Analytics Engine)
-- `GET /api/analytics?date=YYYY-MM-DD` — query Analytics Engine SQL API and return daily stats
-- `GET /api/visitorstats` — visitor count stats
+- `POST /api/analytics` — record a game completion (IP-deduped, writes to Analytics Engine)
+- `GET /api/analytics?date=YYYY-MM-DD` — query Analytics Engine and return `{ date, plays, solves, archivePlays, firstTimers, attempts }`
+- `GET /api/visitorstats` — internal-only daily play counts (last 30 days)
 
 Example:
 
