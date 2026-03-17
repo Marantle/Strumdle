@@ -6,6 +6,7 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
+import { addDays, todayUtc } from "./lib/scheduleUtils.ts";
 
 const schedule = JSON.parse(readFileSync("data/schedule.json", "utf8"));
 
@@ -14,14 +15,7 @@ if (schedule.length === 0) {
   process.exit(0);
 }
 
-// Today in UTC (same convention as generate-daily.ts)
-const today = new Date().toISOString().split("T")[0];
-
-function addDays(dateStr: string, days: number): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d + days));
-  return dt.toISOString().split("T")[0];
-}
+const today = todayUtc();
 
 for (let i = 0; i < schedule.length; i++) {
   schedule[i].date = addDays(today, i);

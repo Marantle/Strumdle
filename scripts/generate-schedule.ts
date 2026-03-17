@@ -9,33 +9,10 @@
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
 import { join } from "path";
-import { parseMidi, parseSongIni } from "./parser/midiParser.ts";
-import { normalize } from "./parser/normalizer.ts";
-import type { TrackName } from "../src/types.ts";
-
-const CLIP_DURATION = 5000; // 5 seconds
-const TRACK: TrackName = "guitar_expert";
-
-const ICON_TO_GAME: Record<string, string> = {
-  gh1: "Guitar Hero",
-  gh2: "Guitar Hero II",
-  gh3: "Guitar Hero III",
-  ghm: "Guitar Hero: Metallica",
-  gh5: "Guitar Hero 5",
-  ghwt: "Guitar Hero: World Tour",
-};
-
-interface ScheduleEntry {
-  date: string;
-  chartFile: string;
-  track: string;
-  startMs: number;
-  title: string;
-  artist: string;
-  hints: string[];
-  aliases: string[];
-  game: string;
-}
+import { parseSongIni } from "./parser/midiParser.ts";
+import { ICON_TO_GAME } from "./lib/iconToGame.ts";
+import { addDays, findBestStart, isExcludedSong } from "./lib/scheduleUtils.ts";
+import type { ScheduleEntry } from "./lib/buildChallenge.ts";
 
 // Load existing schedule
 const schedule: ScheduleEntry[] = JSON.parse(
@@ -66,8 +43,7 @@ for (const dir of readdirSync("data/songs")) {
 
   // Skip already scheduled, co-op variants, guitar battles, and bonus songs
   if (scheduledTitles.has(ini.title.toLowerCase())) continue;
-  if (ini.title.includes("(Co-op)")) continue;
-  if (ini.title.includes("Guitar Battle")) continue;
+  if (isExcludedSong(ini.title)) continue;
   if (existsSync(join("data/songs", dir, "bonus"))) continue;
 
   candidates.push({
@@ -81,82 +57,6 @@ for (const dir of readdirSync("data/songs")) {
 
 console.log(`${candidates.length} eligible songs (excluding scheduled, co-op, battles)`);
 
-/**
- * Find the best start position for a clip by scoring 5s windows.
- * Prefers windows where:
- * - Notes start within the first 500ms (no silence at the start)
- * - High note density throughout the clip
- * - No gap longer than 1.5s within the clip
- *
- * Falls back to 25-50% of song length if parsing fails.
- */
-function findBestStart(slug: string, songLength: number): number {
-  const midPath = join("data/songs", slug, "notes.mid");
-  if (!existsSync(midPath)) {
-    return fallbackStart(songLength);
-  }
-
-  try {
-    const buffer = readFileSync(midPath);
-    const ab = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-    const iniPath = join("data/songs", slug, "song.ini");
-    const meta = existsSync(iniPath)
-      ? { title: "", artist: "" }
-      : undefined;
-    const raw = parseMidi(ab, TRACK, meta);
-    const parsed = normalize(raw, TRACK);
-
-    const noteTimes = parsed.notes.map((n) => n.timeMs).sort((a, b) => a - b);
-    if (noteTimes.length < 5) return fallbackStart(songLength);
-
-    const lastNote = noteTimes[noteTimes.length - 1];
-    // Candidate start positions: every 500ms from 10% to 70% of the song
-    const minPos = Math.floor(lastNote * 0.1);
-    const maxPos = Math.floor(lastNote * 0.7);
-    const step = 500;
-
-    let bestStart = fallbackStart(songLength);
-    let bestScore = -Infinity;
-
-    for (let start = minPos; start <= maxPos; start += step) {
-      const end = start + CLIP_DURATION;
-
-      // Notes in this window
-      const windowNotes = noteTimes.filter((t) => t >= start && t < end);
-      if (windowNotes.length < 3) continue;
-
-      // Time to first note from start (smaller is better)
-      const firstNoteDelay = windowNotes[0] - start;
-      if (firstNoteDelay > 500) continue; // Skip if silence > 500ms at start
-
-      // Check for gaps > 1.5s within the window
-      let maxGap = firstNoteDelay;
-      for (let i = 1; i < windowNotes.length; i++) {
-        maxGap = Math.max(maxGap, windowNotes[i] - windowNotes[i - 1]);
-      }
-      if (maxGap > 1500) continue; // Skip windows with big silent gaps
-
-      // Score: note count, penalize first-note delay
-      const score = windowNotes.length - firstNoteDelay * 0.01;
-      if (score > bestScore) {
-        bestScore = score;
-        bestStart = windowNotes[0]; // snap to first note hit
-      }
-    }
-
-    return bestStart;
-  } catch (e) {
-    console.warn(`    Could not parse MIDI for ${slug}: ${e}`);
-    return fallbackStart(songLength);
-  }
-}
-
-function fallbackStart(songLength: number): number {
-  const minStart = Math.floor(songLength * 0.25);
-  const maxStart = Math.floor(songLength * 0.50);
-  return minStart + Math.floor(Math.random() * (maxStart - minStart));
-}
-
 // Shuffle and pick 10
 for (let i = candidates.length - 1; i > 0; i--) {
   const j = Math.floor(Math.random() * (i + 1));
@@ -164,19 +64,12 @@ for (let i = candidates.length - 1; i > 0; i--) {
 }
 const picked = candidates.slice(0, 10);
 
-// Generate entries — use string date math to avoid timezone issues
-function addDays(dateStr: string, days: number): string {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d + days));
-  return dt.toISOString().split("T")[0];
-}
-
 let nextDate = addDays(lastDate, 1);
 for (const song of picked) {
   const dateStr = nextDate;
   nextDate = addDays(dateStr, 1);
 
-  const startMs = findBestStart(song.slug, song.songLength);
+  const startMs = findBestStart(join("data/songs", song.slug), song.songLength);
 
   const entry: ScheduleEntry = {
     date: dateStr,

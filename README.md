@@ -46,7 +46,7 @@ The `data/` directory is a git submodule pointing to a private repo containing t
 - `GET /api/analytics?date=YYYY-MM-DD` — query Analytics Engine and return `{ date, plays, solves, archivePlays, firstTimers, attempts }`
 - `GET /api/visitorstats` — internal-only daily play counts (last 30 days)
 
-Example:
+Examples:
 
 - [https://strumdle.com/api/analytics?date=2026-03-12](https://strumdle.com/api/analytics?date=2026-03-12)
 
