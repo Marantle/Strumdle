@@ -11,6 +11,7 @@
 import { readdirSync, existsSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, statSync } from "fs";
 import { join, basename } from "path";
 import { parseSongIni } from "./parser/midiParser.ts";
+import { isExcludedSong } from "./lib/scheduleUtils.ts";
 
 const SOURCE_DIR = "original_songs";
 const TARGET_DIR = "data/songs";
@@ -131,14 +132,8 @@ for (const gameDir of GAME_DIRS) {
       songName = basename(srcDir);
     }
 
-    // Skip co-op variants
-    if (/\(co-?op\)/i.test(songName)) {
-      skipped++;
-      continue;
-    }
-
-    // Skip guitar battle tracks
-    if (/guitar battle/i.test(songName)) {
+    // Skip co-op variants and guitar battle tracks
+    if (isExcludedSong(songName)) {
       skipped++;
       continue;
     }
