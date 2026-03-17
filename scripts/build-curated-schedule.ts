@@ -8,17 +8,10 @@ import { join } from "path";
 import { parseMidi, parseSongIni } from "./parser/midiParser.ts";
 import { normalize } from "./parser/normalizer.ts";
 import type { TrackName } from "../src/types.ts";
+import { ICON_TO_GAME } from "./lib/iconToGame.ts";
 
 const CLIP = 5000;
 const TRACK: TrackName = "guitar_expert";
-const ICON_TO_GAME: Record<string, string> = {
-  gh1: "Guitar Hero",
-  gh2: "Guitar Hero II",
-  gh3: "Guitar Hero III",
-  ghm: "Guitar Hero: Metallica",
-  gh5: "Guitar Hero 5",
-  ghwt: "Guitar Hero: World Tour",
-};
 
 // Songs where the opening riff IS the song — start at 0
 const MANUAL_START: Record<string, number> = {

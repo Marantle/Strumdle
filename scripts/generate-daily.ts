@@ -13,6 +13,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "fs";
 import { join } from "path";
 import { parseSongIni } from "./parser/midiParser.ts";
+import { ICON_TO_GAME } from "./lib/iconToGame.ts";
 import type { SongListEntry } from "../src/types.ts";
 import { buildChallenge, type ScheduleEntry } from "./lib/buildChallenge.ts";
 
@@ -61,14 +62,6 @@ writeFileSync(outPath, JSON.stringify(daily, null, 2));
 // Generate enriched song list for autocomplete (from all songs/ directories)
 // ---------------------------------------------------------------------------
 
-const ICON_TO_GAME: Record<string, string> = {
-  gh1: "Guitar Hero",
-  gh2: "Guitar Hero II",
-  gh3: "Guitar Hero III",
-  ghm: "Guitar Hero: Metallica",
-  gh5: "Guitar Hero 5",
-  ghwt: "Guitar Hero: World Tour",
-};
 
 const songListEntries: SongListEntry[] = [];
 for (const dir of readdirSync("data/songs")) {
