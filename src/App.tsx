@@ -221,8 +221,8 @@ export default function App() {
           #{challenge.challengeNumber} &nbsp; Guess the song from the chart
         </p>
         {challenge.challengeNumber === 1 && (
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            This is a dev/test song — the real challenges start at #2
+          <p className="text-xs font-medium text-amber-500 mt-1">
+            Happy to see you! This is a dev/test riff — the real challenges start at #2
           </p>
         )}
         {!isInstalled && installPromptEvent && (

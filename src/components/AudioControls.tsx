@@ -94,7 +94,7 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
             className="gap-1.5 text-muted-foreground"
           >
             <Settings className="h-4 w-4" />
-            <span className="text-xs">Lane sounds</span>
+            <span className="text-xs">Change lane instruments</span>
             <span className={`text-xs transition-transform ${expanded ? "rotate-180" : ""}`}>▼</span>
           </Button>
         )}

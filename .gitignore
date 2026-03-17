@@ -36,6 +36,7 @@ guitar_sounds/
 *.sln
 *.sw?
 
+original_songs
 original_songs/
 
 #tests

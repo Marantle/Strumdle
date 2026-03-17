@@ -3,19 +3,28 @@ import { Button } from "./ui/button";
 
 // Bump this string whenever new features ship that returning users should know about.
 // Format: "YYYY-MM-DD" matching the deploy date.
-const CURRENT_VERSION = "2026-03-15";
+const CURRENT_VERSION = "2026-03-18";
 
 const WELCOME_KEY = "strumdle-welcome-seen";
 const SEEN_KEY = "strumdle-whats-new-seen";
 
 const UPDATES: { version: string; items: string[] }[] = [
   {
+    version: "2026-03-18",
+    items: [
+      "Today, and in the future, some songs will have a non-zero start time to skip long intros",
+      "So pay attention to the timer at top right of the highway, which shows the current position in the song!"
+    ],
+
+  },
+  {
     version: "2026-03-15",
     items: [
       "Past challenges are now playable — visit any previous day via the grid in the results modal",
       "Results modal shows a grid of all past challenges with your solve status"
     ],
-  },
+
+  }
 ];
 
 function getLastSeen(): string | null {
@@ -52,15 +61,13 @@ export default function WhatsNewModal() {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${
-        visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
-      }`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
+        }`}
       onClick={handleDismiss}
     >
       <div
-        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-all duration-500 ${
-          visible ? "opacity-100" : "opacity-0"
-        }`}
+        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-all duration-500 ${visible ? "opacity-100" : "opacity-0"
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}

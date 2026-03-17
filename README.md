@@ -65,6 +65,60 @@ Example:
 | `npm run import-songs` | Import songs from `original_songs/` into `data/songs/` |
 | `npm run deploy` | Build and deploy to Cloudflare Pages |
 
+## Adding Songs
+
+Songs are imported from a local `original_songs/` directory (gitignored) using `npm run import-songs`. The importer expects Guitar Hero chart folders — each containing at minimum a `notes.mid` file, and optionally a `song.ini` metadata file.
+
+### Supported games
+
+The importer scans these subdirectories of `original_songs/` by name:
+
+| Directory | Game |
+|-----------|------|
+| `Guitar Hero` | Guitar Hero (GH1) |
+| `Guitar Hero II` | Guitar Hero II |
+| `Guitar Hero III` | Guitar Hero III: Legends of Rock |
+| `Guitar Hero - Aerosmith` | Guitar Hero: Aerosmith |
+| `Guitar Hero - Metallica` | Guitar Hero: Metallica |
+| `Guitar Hero World Tour` | Guitar Hero: World Tour |
+| `Guitar Hero 5` | Guitar Hero 5 |
+
+### Source format
+
+Charts must follow the standard Clone Hero / Guitar Hero rip format:
+
+```
+original_songs/
+  Guitar Hero II/
+    Quickplay/
+      Nirvana - Heart-Shaped Box/
+        notes.mid
+        song.ini
+    Bonus/
+      Some Band - Some Song/
+        notes.mid
+        song.ini
+```
+
+Songs found inside a `Bonus/` subdirectory are marked as bonus tracks and excluded from random schedule generation (but still importable and usable if added manually to `schedule.json`).
+
+Both `notes.mid` (MIDI binary) and `notes.chart` (text format) are supported. When `chartFile` in `schedule.json` points to a directory, `notes.chart` is tried first, then `notes.mid`. You can also point `chartFile` directly at a `.chart` or `.mid` file path to bypass the directory lookup entirely.
+
+Co-op variants (songs with `(Co-op)` in their name) and guitar battle tracks are automatically skipped.
+
+### Where to get charts
+
+Guitar Hero chart rips are widely available in the Clone Hero community. The [ScoreHero](https://www.scorehero.com) forums and the Clone Hero Discord are common starting points. You need the original MIDI-based rips, not `.chart` format.
+
+### Symlinking a song library
+
+If your charts live on a different drive, you can symlink them:
+
+```
+# Windows (run as Administrator in cmd.exe)
+mklink /D "original_songs" "E:\Guitar Hero Charts"
+```
+
 ## Deployment
 
 The private repo runs a nightly GitHub Action that generates the day's puzzle, builds the app, and deploys to Cloudflare Pages.

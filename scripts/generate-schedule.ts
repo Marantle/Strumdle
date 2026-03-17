@@ -64,10 +64,11 @@ for (const dir of readdirSync("data/songs")) {
 
   const ini = parseSongIni(readFileSync(iniPath, "utf8"));
 
-  // Skip already scheduled, co-op variants, and guitar battles
+  // Skip already scheduled, co-op variants, guitar battles, and bonus songs
   if (scheduledTitles.has(ini.title.toLowerCase())) continue;
   if (ini.title.includes("(Co-op)")) continue;
   if (ini.title.includes("Guitar Battle")) continue;
+  if (existsSync(join("data/songs", dir, "bonus"))) continue;
 
   candidates.push({
     slug: dir,
