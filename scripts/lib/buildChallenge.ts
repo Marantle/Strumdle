@@ -89,11 +89,18 @@ export function buildChallenge(entry: ScheduleEntry): DailyChallenge {
   const clip = sliceClip(parsed, entry.startMs);
   const answer = `${entry.title}|${entry.artist}`;
 
+  // sliceClip snaps startMs forward to the first note if there's silence at
+  // the window start — use the same snap so the timer shows the correct position.
+  const firstNote = parsed.notes.find((n) => n.timeMs >= entry.startMs);
+  const actualStartMs = firstNote && firstNote.timeMs > entry.startMs
+    ? firstNote.timeMs
+    : entry.startMs;
+
   return {
     date: entry.date,
     challengeNumber: getChallengeNumber(entry.date),
     clip,
-    clipSongStartMs: entry.startMs,
+    clipSongStartMs: actualStartMs,
     answerObfuscated: Buffer.from(answer).toString("base64"),
     aliasesObfuscated: (entry.aliases ?? []).map((a) =>
       Buffer.from(a).toString("base64"),

@@ -12,7 +12,7 @@ const UPDATES: { version: string; items: string[] }[] = [
   {
     version: "2026-03-18",
     items: [
-      "Today, and in the future, some songs will have a non-zero start time to skip long intros",
+      "Today, and in the future, some songs will have a non-zero start time to skip long no note intros. The start time is chosen the first non-silent part of the song",
       "So pay attention to the timer at top right of the highway, which shows the current position in the song!"
     ],
 
