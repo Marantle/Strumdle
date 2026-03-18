@@ -3,17 +3,22 @@ import { Button } from "./ui/button";
 
 // Bump this string whenever new features ship that returning users should know about.
 // Format: "YYYY-MM-DD" matching the deploy date.
-const CURRENT_VERSION = "2026-03-18";
+const CURRENT_VERSION = "2026-03-19";
 
 const WELCOME_KEY = "strumdle-welcome-seen";
 const SEEN_KEY = "strumdle-whats-new-seen";
 
 const UPDATES: { version: string; items: string[] }[] = [
   {
-    version: "2026-03-18",
+    version: "2026-03-19",
     items: [
       "Added Guitar Hero: Aerosmith and Guitar Hero: Metallica to the song and challenge lists!",
       "Fixed a potential issue of the Guitar sounds not playing on IOS Safari due to no .ogg support",
+    ],
+  },
+  {
+    version: "2026-03-18",
+    items: [
       "Today, and in the future, some songs will have a non-zero start time and start in middle of the song. So pay attention to the timer at top right of the highway, which shows the current position in the song!",
       "For songs starting at the beginning, the start time is chosen as the first part of the song with notes so noteless part will be skipped, the top right timer should be accurate to the real song."
     ],
