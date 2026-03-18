@@ -90,7 +90,7 @@ export function buildChallenge(entry: ScheduleEntry): DailyChallenge {
   const answer = `${entry.title}|${entry.artist}`;
 
   // sliceClip snaps startMs forward to the first note if there's silence at
-  // the window start — use the same snap so the timer shows the correct position.
+  // the window start; use the same snap so the timer shows the correct position.
   const firstNote = parsed.notes.find((n) => n.timeMs >= entry.startMs);
   const actualStartMs = firstNote && firstNote.timeMs > entry.startMs
     ? firstNote.timeMs

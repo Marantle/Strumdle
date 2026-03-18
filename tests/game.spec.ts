@@ -5,7 +5,7 @@ async function makeGuess(page: Page, text: string) {
   await page.getByRole("listitem").filter({ hasText: text }).first().click();
 }
 
-// Run once per test — does NOT run again on page.reload()
+// Run once per test, does NOT run again on page.reload()
 test.beforeEach(async ({ page }) => {
   await page.goto("/1");
   await page.evaluate(() => {

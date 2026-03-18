@@ -9,7 +9,7 @@ const todayUtc = new Date().toISOString().split("T")[0];
 const path = "src/data/today.json";
 
 if (!existsSync(path)) {
-  console.error(`✗ ${path} not found — run: npm run generate`);
+  console.error(`✗ ${path} not found. Run: npm run generate`);
   process.exit(1);
 }
 
@@ -23,4 +23,4 @@ if (date !== todayUtc) {
   process.exit(1);
 }
 
-console.log(`✓ today.json is for ${date} — OK`);
+console.log(`✓ today.json is for ${date} OK`);

@@ -1,7 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 /**
- * GET  /api/analytics?date=2026-03-12  — query Analytics Engine for daily stats
- * POST /api/analytics                  — record a game completion
+ * GET  /api/analytics?date=2026-03-12  - query Analytics Engine for daily stats
+ * POST /api/analytics                  - record a game completion
  *
  * Requires env vars: CF_ACCOUNT_ID, CF_API_TOKEN, ANALYTICS
  * CF_ACCOUNT_ID + CF_API_TOKEN are also used on POST to detect first-time players via

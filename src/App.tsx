@@ -49,7 +49,8 @@ function hydrateGuesses(
   challenge: DailyChallenge,
   songList: SongListEntry[],
 ): GuessEntry[] {
-  return titles.map((text) => {
+  return titles.map((raw) => {
+    const text = raw === "—" ? "-" : raw;
     const result = checkGuess(text, challenge, songList);
     return { text, artistMatch: result.artistMatch, gameMatch: result.gameMatch };
   });
@@ -169,7 +170,7 @@ export default function App() {
   }, []);
 
   const handleSkip = useCallback(() => {
-    const newGuesses = [...guesses, { text: "—", artistMatch: false, gameMatch: false }];
+    const newGuesses = [...guesses, { text: "-", artistMatch: false, gameMatch: false }];
     setGuesses(newGuesses);
     if (newGuesses.length >= challenge.maxGuesses) {
       setGameState("done");
@@ -222,7 +223,7 @@ export default function App() {
         </p>
         {challenge.challengeNumber === 1 && (
           <p className="text-xs font-medium text-amber-500 mt-1">
-            Happy to see you! This is a dev/test riff — the real challenges start at #2
+            Happy to see you! This is a dev/test riff. The real challenges start at #2.
           </p>
         )}
         {!isInstalled && installPromptEvent && (

@@ -214,7 +214,7 @@ function parseMidiFile(buffer: ArrayBuffer): {
         const len = reader.readVarLen();
         reader.skip(len);
       } else {
-        // Unknown — bail to avoid infinite loop
+        // Unknown: bail to avoid infinite loop
         break;
       }
     }

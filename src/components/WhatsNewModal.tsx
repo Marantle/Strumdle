@@ -27,7 +27,7 @@ const UPDATES: { version: string; items: string[] }[] = [
   {
     version: "2026-03-15",
     items: [
-      "Past challenges are now playable — visit any previous day via the grid in the results modal",
+      "Past challenges are now playable. Visit any previous day via the grid in the results modal.",
       "Results modal shows a grid of all past challenges with your solve status"
     ],
 

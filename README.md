@@ -12,7 +12,7 @@ Each day a new 7-second clip from a Guitar Hero chart is revealed. You get 6 gue
 
 ## Development
 
-No private data needed — a test chart is included:
+No private data needed. A test chart is included:
 
 ```bash
 npm install
@@ -34,17 +34,17 @@ The `data/` directory is a git submodule pointing to a private repo containing t
 
 ## Project Structure
 
-- `src/` — React frontend (chart renderer, game logic, UI)
-- `functions/api/` — Cloudflare Pages Functions API endpoints (`/api/visitorstats`, `/api/analytics`)
-- `scripts/` — Build-time tools (puzzle generator, schedule builder, song importer)
-- `data/` — Private submodule: songs, schedule, guitar sound sources
-- `public/sounds/` — Guitar audio samples (open-licensed from freesound.org)
+- `src/`: React frontend (chart renderer, game logic, UI)
+- `functions/api/`: Cloudflare Pages Functions API endpoints (`/api/visitorstats`, `/api/analytics`)
+- `scripts/`: Build-time tools (puzzle generator, schedule builder, song importer)
+- `data/`: Private submodule: songs, schedule, guitar sound sources
+- `public/sounds/`: Guitar audio samples (open-licensed from freesound.org)
 
 ## API Endpoints
 
-- `POST /api/analytics` — record a game completion (IP-deduped, writes to Analytics Engine)
-- `GET /api/analytics?date=YYYY-MM-DD` — query Analytics Engine and return `{ date, plays, solves, archivePlays, firstTimers, attempts }`
-- `GET /api/visitorstats` — internal-only daily play counts (last 30 days)
+- `POST /api/analytics`: record a game completion (IP-deduped, writes to Analytics Engine)
+- `GET /api/analytics?date=YYYY-MM-DD`: query Analytics Engine and return `{ date, plays, solves, archivePlays, firstTimers, attempts }`
+- `GET /api/visitorstats`: internal-only daily play counts (last 30 days)
 
 Examples:
 
@@ -67,7 +67,7 @@ Examples:
 
 ## Adding Songs
 
-Songs are imported from a local `original_songs/` directory (gitignored) using `npm run import-songs`. The importer expects Guitar Hero chart folders — each containing at minimum a `notes.mid` file, and optionally a `song.ini` metadata file.
+Songs are imported from a local `original_songs/` directory (gitignored) using `npm run import-songs`. The importer expects Guitar Hero chart folders, each containing at minimum a `notes.mid` file, and optionally a `song.ini` metadata file.
 
 ### Supported games
 

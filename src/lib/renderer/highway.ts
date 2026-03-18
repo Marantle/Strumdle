@@ -113,7 +113,7 @@ function drawHighwayBackground(
   ctx.closePath();
   ctx.fill();
 
-  // Highway edge rails — metallic look
+  // Highway edge rails: metallic look
   ctx.lineWidth = 2.5;
   const railGrad = ctx.createLinearGradient(0, topY, 0, strikelineY);
   railGrad.addColorStop(0, "rgba(120, 120, 140, 0.3)");
@@ -130,7 +130,7 @@ function drawHighwayBackground(
   ctx.lineTo(botRight, strikelineY);
   ctx.stroke();
 
-  // Lane separator "strings" — metallic wires
+  // Lane separator "strings": metallic wires
   for (let i = 1; i < 5; i++) {
     const topX = laneCenter(i - 0.5, topScale, config);
     const botX = laneCenter(i - 0.5, 1, config);
@@ -414,7 +414,7 @@ function drawFretButtons(
     ctx.beginPath();
     ctx.arc(cx, y, innerR, 0, Math.PI * 2);
     if (isActive) {
-      // Lit — filled with lighter color
+      // Lit: filled with lighter color
       const innerGrad = ctx.createRadialGradient(
         cx, y - innerR * 0.3, innerR * 0.1,
         cx, y, innerR,

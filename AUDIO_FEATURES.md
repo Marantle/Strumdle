@@ -2,7 +2,7 @@
 
 ## Overview
 
-Custom Web Audio API system with per-lane sound assignment. Notes play when they hit the strikeline during chart playback. No external audio libraries — just the browser's built-in AudioContext.
+Custom Web Audio API system with per-lane sound assignment. Notes play when they hit the strikeline during chart playback. No external audio libraries, just the browser's built-in AudioContext.
 
 ## Sound Catalog
 
@@ -38,7 +38,7 @@ All synth sounds use the guitar open-string frequency mapping: E3, A3, D4, G4, B
 
 Each of the 5 lanes (Green, Red, Yellow, Blue, Orange) can be assigned any sound independently. There's also a "Set all lanes" shortcut.
 
-Settings (lane sounds + mute state) persist in `localStorage` under key `strumdle-audio`, with forward/backward compatibility — unknown sound IDs from future/past versions fall back to "Real Guitar".
+Settings (lane sounds + mute state) persist in `localStorage` under key `strumdle-audio`, with forward/backward compatibility; unknown sound IDs from future/past versions fall back to "Real Guitar".
 
 ## Audio Pipeline
 
@@ -46,7 +46,7 @@ Settings (lane sounds + mute state) persist in `localStorage` under key `strumdl
 BufferSource / Oscillator → per-note GainNode → masterGain → DynamicsCompressor → destination
 ```
 
-- **DynamicsCompressor**: threshold -12dB, ratio 4:1, knee 6dB — prevents clipping when many notes hit simultaneously
+- **DynamicsCompressor**: threshold -12dB, ratio 4:1, knee 6dB (prevents clipping when many notes hit simultaneously)
 - **Master volume**: 0.7 default
 
 ## Adding a New Sample-Based Sound
@@ -81,11 +81,11 @@ ffmpeg -i source.wav -ss 0.1 -t 7 -ac 1 -ar 48000 -c:a libvorbis -q:a 5 -af "afa
 ```
 
 **Key flags:**
-- `-ac 1` — mono (required)
-- `-ar 48000` — 48 kHz sample rate (matches existing files)
-- `-c:a libvorbis -q:a 5` — Ogg Vorbis, quality ~5 (good balance of size vs quality)
-- `-ss` / `-t` — start offset and duration for trimming
-- `-af "afade=..."` — fade in/out to avoid clicks at boundaries
+- `-ac 1`: mono (required)
+- `-ar 48000`: 48 kHz sample rate (matches existing files)
+- `-c:a libvorbis -q:a 5`: Ogg Vorbis, quality ~5 (good balance of size vs quality)
+- `-ss` / `-t`: start offset and duration for trimming
+- `-af "afade=..."`: fade in/out to avoid clicks at boundaries
 
 **Naming convention:** `{prefix}-hit{0-4}.ogg` and `{prefix}-sustain{0-4}.ogg` (e.g., `jazz-hit0.ogg`)
 

@@ -48,7 +48,7 @@ const today = dateArg
 
 if (!existsSync("data/schedule.json")) {
   writeFileSync("src/data/archive.json", "{}");
-  console.log("No schedule found — wrote empty archive.json");
+  console.log("No schedule found, wrote empty archive.json");
   process.exit(0);
 }
 

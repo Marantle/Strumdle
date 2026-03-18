@@ -116,6 +116,6 @@ console.log(`  Notes in clip: ${daily.clip.notes.length}`);
 const futureEntries = schedule.filter((e) => e.date > today).length;
 if (futureEntries < 3) {
   console.warn(
-    `⚠ Only ${futureEntries} future entries in schedule.json — add more songs!`,
+    `⚠ Only ${futureEntries} future entries in schedule.json. Add more songs!`,
   );
 }

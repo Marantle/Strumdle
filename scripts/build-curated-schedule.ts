@@ -9,7 +9,7 @@ import { parseSongIni } from "./parser/midiParser.ts";
 import { ICON_TO_GAME } from "./lib/iconToGame.ts";
 import { addDays, findBestStart } from "./lib/scheduleUtils.ts";
 
-// Songs where the opening riff IS the song — start at 0
+// Songs where the opening riff IS the song, start at 0
 const MANUAL_START: Record<string, number> = {
   "sweet-child-o-mine": 0,
   "crazy-train": 0,

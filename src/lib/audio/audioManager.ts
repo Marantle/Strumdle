@@ -39,7 +39,7 @@ export const SOUND_CATALOG: SoundDef[] = [
   { id: "tap",       name: "Tap",         description: "Virtual percussive click" },
 ];
 
-// Base frequencies per lane (E3, A3, D4, G4, B4 — guitar open strings)
+// Base frequencies per lane (E3, A3, D4, G4, B4 - guitar open strings)
 const LANE_FREQ = [164.81, 220.0, 293.66, 392.0, 493.88];
 
 // Lane display colors (for UI)
@@ -95,7 +95,7 @@ function synthBass(ctx: AudioContext, dest: GainNode, freq: number, now: number)
 
 
 function synthHarmonic(ctx: AudioContext, dest: GainNode, freq: number, now: number) {
-  // Pure sine harmonics — bell-like natural harmonic
+  // Pure sine harmonics: bell-like natural harmonic
   const f = freq * 2; // Harmonic is usually an octave up
   for (const [mult, gain, decay] of [
     [1, 0.3, 1.2],
@@ -117,7 +117,7 @@ function synthHarmonic(ctx: AudioContext, dest: GainNode, freq: number, now: num
 
 
 function synthBell(ctx: AudioContext, dest: GainNode, freq: number, now: number) {
-  // Inharmonic partials — metallic bell/chime
+  // Inharmonic partials: metallic bell/chime
   const f = freq * 2;
   const partials: [number, number, number][] = [
     [1.0, 0.25, 1.5],
@@ -194,7 +194,7 @@ function synthTap(ctx: AudioContext, dest: GainNode, freq: number, now: number) 
 }
 
 // Map sound IDs to their synth function.
-// Sample-based sounds use () => {} — playback is handled by AudioManager.
+// Sample-based sounds use () => {}; playback is handled by AudioManager.
 const SYNTH_MAP: Record<SoundId, SynthFn> = {
   real: () => {},
   funk: () => {},
@@ -412,7 +412,7 @@ function loadAudioPrefs(): { laneSounds: SoundId[]; muted: boolean } {
 function saveAudioPrefs(laneSounds: SoundId[], muted: boolean) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ laneSounds, muted }));
-  } catch { /* quota exceeded — ignore */ }
+  } catch { /* quota exceeded, ignore */ }
 }
 
 class AudioManager {
@@ -453,7 +453,7 @@ class AudioManager {
       getNoiseBuffer(this.audioContext);
       this.initialized = true;
 
-      // Decode prefetched samples in the background — don't block initialize()
+      // Decode prefetched samples in the background, don't block initialize()
       // so the first user gesture returns quickly and doesn't inflate INP
       this.loadSamples().catch(console.error);
     } catch (error) {
@@ -655,7 +655,7 @@ class AudioManager {
   }
 
   stopAll() {
-    // Fire-and-forget envelopes — nodes self-terminate
+    // Fire-and-forget envelopes: nodes self-terminate
   }
 }
 
