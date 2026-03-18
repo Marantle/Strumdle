@@ -89,7 +89,7 @@ export default function WhatsNewModal() {
         <div className="px-6 pt-8 pb-4 text-center">
           <div className="text-4xl mb-2">🆕</div>
           <h2 className="text-xl font-bold tracking-tight">What&apos;s New</h2>
-          <p className="text-xs text-muted-foreground mt-1">Updates since your last visit</p>
+          <p className="text-xs text-muted-foreground mt-1">Updates have happened</p>
         </div>
 
         {/* Update list */}

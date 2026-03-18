@@ -31,17 +31,15 @@ export default function WelcomeModal() {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${
-        visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
-      }`}
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
+        }`}
       onClick={handleDismiss}
     >
       <div
-        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transition-all duration-500 ${
-          visible
+        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transition-all duration-500 ${visible
             ? "opacity-100"
             : "opacity-0"
-        }`}
+          }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -64,17 +62,17 @@ export default function WelcomeModal() {
         <div className="px-6 pb-4 text-sm text-muted-foreground space-y-3">
           <p>
             A daily guessing game inspired by Guitar Hero. You'll see a note
-            chart scroll down the screen &mdash; your job is to figure out which
+            chart scroll down the screen. Your job is to figure out which
             song it is.
           </p>
           <p>
             Press <strong className="text-foreground">Play</strong> to watch the
             chart, then type your guess. You get 6 attempts, and the chart
-            reveals more with each wrong guess.
+            plays 2 seconds longer after each wrong guess.
           </p>
           <p className="text-xs border border-border rounded-lg px-3 py-2 bg-muted/40">
-            🔊 <strong className="text-foreground">Heads up:</strong> the sounds
-            are simulated &mdash; not from the real recordings. Trust the note
+            🔊 <strong className="text-foreground">Heads up:</strong> the sounds besides 
+            the guitars are simulated and not from the real recordings and no audio from the games is included. Trust the note
             patterns! You can swap guitar sounds from the audio controls.
           </p>
         </div>
