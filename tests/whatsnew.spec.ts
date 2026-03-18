@@ -22,7 +22,7 @@ test("returning visitor who already saw current version does not see modal again
   await page.evaluate(() => {
     localStorage.clear();
     localStorage.setItem("strumdle-welcome-seen", "1");
-    localStorage.setItem("strumdle-whats-new-seen", "2026-03-18");
+    localStorage.setItem("strumdle-whats-new-seen", "2026-03-19");
   });
   await page.goto("/");
   await expect(page.getByText("What's New")).not.toBeVisible();
@@ -40,7 +40,7 @@ test("dismissing whats new modal stores current version and hides modal", async 
   await expect(page.getByText("What's New")).not.toBeVisible();
 
   const seen = await page.evaluate(() => localStorage.getItem("strumdle-whats-new-seen"));
-  expect(seen).toBe("2026-03-18");
+  expect(seen).toBe("2026-03-19");
 });
 
 test("returning visitor who has seen a newer version does not see modal", async ({ page }) => {
