@@ -118,7 +118,7 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
               <option value="">Choose a sound...</option>
               {SOUND_CATALOG.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name} — {s.description}
+                  {s.name}: {s.description}
                 </option>
               ))}
             </select>

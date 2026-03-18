@@ -8,6 +8,6 @@
 /index.html
   Cache-Control: no-cache
 
-# Vite bundles have content-hashed filenames — safe to cache forever
+# Vite bundles have content-hashed filenames, safe to cache forever
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

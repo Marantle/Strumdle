@@ -72,7 +72,7 @@ test("attempts distribution renders correct counts for selected day", async ({ p
   await setupMocks(page);
   await page.goto("/visitorstats");
 
-  // Attempt 1 has 76 solves — the SVG bar chart shows counts in tooltips,
+  // Attempt 1 has 76 solves; the SVG bar chart shows counts in tooltips,
   // but the bar widths are relative. Check the section heading is visible.
   await expect(page.getByText("Attempts distribution")).toBeVisible();
 });

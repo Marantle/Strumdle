@@ -178,7 +178,7 @@ export default function VisitorStats() {
   const totalPlays = data.daily.reduce((s, d) => s + d.plays, 0);
   const totalSolves = data.daily.reduce((s, d) => s + d.solves, 0);
   const avgPerDay = data.daily.length > 0 ? Math.round(totalPlays / data.daily.length) : 0;
-  const solveRate = totalPlays > 0 ? ((totalSolves / totalPlays) * 100).toFixed(1) : "—";
+  const solveRate = totalPlays > 0 ? ((totalSolves / totalPlays) * 100).toFixed(1) : "-";
   const peakDay = data.daily.reduce<DailyEntry | null>(
     (best, d) => (!best || d.plays > best.plays ? d : best),
     null,
@@ -192,7 +192,7 @@ export default function VisitorStats() {
 
   const daySolveRate = dayDetail && dayDetail.plays > 0
     ? ((dayDetail.solves / dayDetail.plays) * 100).toFixed(1)
-    : "—";
+    : "-";
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 max-w-3xl mx-auto">
@@ -254,7 +254,7 @@ export default function VisitorStats() {
         <StatCard label="Total plays" value={totalPlays.toLocaleString()} />
         <StatCard label="Avg / day" value={avgPerDay.toLocaleString()} />
         <StatCard label="Solve rate" value={`${solveRate}%`} />
-        <StatCard label="Peak day" value={peakDay ? peakDay.date.slice(5) : "—"} />
+        <StatCard label="Peak day" value={peakDay ? peakDay.date.slice(5) : "-"} />
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4">

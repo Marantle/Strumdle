@@ -99,7 +99,7 @@ function getUniqueSlug(base: string): string {
   return slug;
 }
 
-if (DRY_RUN) console.log("DRY RUN — no files will be written\n");
+if (DRY_RUN) console.log("DRY RUN: no files will be written\n");
 
 let imported = 0;
 let importedBonus = 0;
