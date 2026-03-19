@@ -1,6 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
+  "automergeSchedule": ["after 1am and before 6pm on every day"],
   "packageRules": [
     {
       "matchPackageNames": ["/.*/"],
