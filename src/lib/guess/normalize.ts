@@ -10,3 +10,11 @@ export function normalizeTitle(raw: string): string {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+/**
+ * Normalize an artist name for comparison: strip trailing parentheticals
+ * like "(WaveGroup)" or "(Steve Quimette)" before standard normalization.
+ */
+export function normalizeArtist(raw: string): string {
+  return normalizeTitle(raw.replace(/\s*\(.*?\)\s*$/, ""));
+}

@@ -1,4 +1,4 @@
-import { normalizeTitle } from "./normalize";
+import { normalizeArtist, normalizeTitle } from "./normalize";
 import type { DailyChallenge, SongListEntry } from "../../types";
 
 export interface GuessResult {
@@ -33,7 +33,7 @@ export function checkGuess(
   );
 
   const artistMatch = guessedEntry
-    ? normalizeTitle(guessedEntry.artist) === normalizeTitle(answerArtist)
+    ? normalizeArtist(guessedEntry.artist) === normalizeArtist(answerArtist)
     : false;
 
   const gameMatch = guessedEntry
