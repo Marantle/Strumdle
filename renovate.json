@@ -1,10 +1,48 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "automergeSchedule": ["after 1am and before 6pm on every day"],
+
+  "osvVulnerabilityAlerts": true,
+  "transitiveRemediation": true,
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": false
+  },
+
+  "minimumReleaseAge": "3 days",
+  "prCreation": "not-pending",
+
+  "rangeStrategy": "pin",
+
+  "automergeStrategy": "squash",
+  "automergeSchedule": ["after 1am and before 6am on every weekday"],
+  "ignoreTests": false,
+
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 5am on Monday"]
+  },
+
   "packageRules": [
     {
-      "matchPackageNames": ["/.*/"],
+      "matchUpdateTypes": ["patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false,
+      "labels": ["dependencies", "review-required"]
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["major"]
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true

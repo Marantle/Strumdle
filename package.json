@@ -14,7 +14,6 @@
     "generate": "tsx scripts/generate-daily.ts",
     "generate:archive": "tsx scripts/generate-archive.ts",
     "schedule": "tsx scripts/generate-schedule.ts",
-    "schedule:curated": "tsx scripts/build-curated-schedule.ts",
     "reschedule": "tsx scripts/reschedule.ts",
     "import-songs": "tsx scripts/import-songs.ts",
     "deploy": "npm run build && wrangler pages deploy dist",
