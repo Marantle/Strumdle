@@ -111,23 +111,69 @@ function getChallengeDate(n: number, baseN: number, baseDate: string): string {
   return d.toISOString().split("T")[0];
 }
 
+const LEGEND_ITEMS = [
+  { className: "challenge-ace ring-1 ring-yellow-400/60", label: "1st guess" },
+  { className: "bg-emerald-500/25", label: "2nd guess" },
+  { className: "bg-green-500/20", label: "3rd guess" },
+  { className: "bg-teal-500/20", label: "4th guess" },
+  { className: "bg-blue-500/20", label: "5th guess" },
+  { className: "bg-orange-500/20", label: "6th guess" },
+  { className: "bg-red-500/20", label: "Failed" },
+  { className: "bg-muted", label: "Not played" },
+];
+
 function PastChallengesGrid({ current, total, baseDate, onClose }: { current: number; total: number; baseDate: string; onClose: () => void }) {
   const [open, setOpen] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
+  const legendRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) gridRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [open]);
 
+  useEffect(() => {
+    if (!legendOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (legendRef.current && !legendRef.current.contains(e.target as Node)) {
+        setLegendOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [legendOpen]);
+
   return (
     <div ref={gridRef} className="border-t border-border/50 pt-3">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <span>Past Challenges</span>
-        <span>{open ? "▲" : "▼"}</span>
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className="flex-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <span>Past Challenges</span>
+          <span>{open ? "▲" : "▼"}</span>
+        </button>
+        <div ref={legendRef} className="relative">
+          <button
+            onClick={(e) => { e.stopPropagation(); setLegendOpen((o) => !o); }}
+            className="w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label="Color legend"
+          >
+            ?
+          </button>
+          {legendOpen && (
+            <div className="absolute right-0 bottom-7 z-10 w-36 rounded-lg border border-border bg-card shadow-lg p-2.5 flex flex-col gap-1.5">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Legend</p>
+              {LEGEND_ITEMS.map(({ className, label }) => (
+                <div key={label} className="flex items-center gap-2">
+                  <span className={`w-4 h-4 rounded-sm shrink-0 ${className}`} />
+                  <span className="text-[11px] text-foreground/80">{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
       {open && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {Array.from({ length: total }, (_, i) => i + 1).map((n) => {
@@ -136,7 +182,7 @@ function PastChallengesGrid({ current, total, baseDate, onClose }: { current: nu
             const saved = (() => {
               try {
                 const s = localStorage.getItem(`daily-${date}`);
-                return s ? JSON.parse(s) as { solved: boolean; guesses: string[] } : null;
+                return s ? JSON.parse(s) as { solved: boolean; guesses: string[]; solvedOnAttempt?: number | null } : null;
               } catch { return null; }
             })();
             let status: "solved" | "failed" | "in-progress" | null = null;
@@ -154,13 +200,22 @@ function PastChallengesGrid({ current, total, baseDate, onClose }: { current: nu
                 </span>
               );
             }
+            const solvedColorClass = (() => {
+              switch (saved?.solvedOnAttempt) {
+                case 1: return "challenge-ace text-yellow-200 ring-1 ring-yellow-400/60";
+                case 2: return "bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35";
+                case 3: return "bg-green-500/20 text-green-400 hover:bg-green-500/30";
+                case 4: return "bg-teal-500/20 text-teal-400 hover:bg-teal-500/30";
+                case 5: return "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30";
+                case 6: return "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30";
+                default: return "bg-green-500/20 text-green-400 hover:bg-green-500/30";
+              }
+            })();
             const colorClass = status === "solved"
-              ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+              ? solvedColorClass
               : status === "failed"
                 ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                : status === "in-progress"
-                  ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
-                  : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground";
+                : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground";
             return (
               <Link key={n} data-testid={`challenge-${n}`} data-status={status ?? "unplayed"} to={n === total ? "/" : `/${n}`} onClick={onClose} className={`${baseClass} font-medium ${colorClass}`}>
                 #{n}

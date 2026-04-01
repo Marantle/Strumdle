@@ -3,12 +3,18 @@ import { Button } from "./ui/button";
 
 // Bump this string whenever new features ship that returning users should know about.
 // Format: "YYYY-MM-DD" matching the deploy date.
-const CURRENT_VERSION = "2026-03-19";
+const CURRENT_VERSION = "2026-04-01";
 
 const WELCOME_KEY = "strumdle-welcome-seen";
 const SEEN_KEY = "strumdle-whats-new-seen";
 
 const UPDATES: { version: string; items: string[] }[] = [
+  {
+    version: "2026-04-01",
+    items: [
+      "Added coloring to the past challenges menu to show how well you have solved each puzzle.",
+    ],
+  },
   {
     version: "2026-03-19",
     items: [
@@ -49,6 +55,9 @@ export default function WhatsNewModal() {
   const lastSeen = getLastSeen();
   // null = first-timer (don't show); "" = never seen (show all); version string = show newer only
   const [show, setShow] = useState(() => lastSeen !== null && lastSeen < CURRENT_VERSION);
+  const newUpdates = UPDATES.filter((u) => lastSeen === "" || u.version > (lastSeen ?? ""));
+  const oldUpdates = UPDATES.filter((u) => lastSeen !== "" && u.version <= (lastSeen ?? ""));
+  const [oldOpen, setOldOpen] = useState(false);
 
   useEffect(() => {
     if (show) {
@@ -92,9 +101,9 @@ export default function WhatsNewModal() {
           <p className="text-xs text-muted-foreground mt-1">Updates have happened</p>
         </div>
 
-        {/* Update list */}
+        {/* New updates */}
         <div className="px-6 pb-4 space-y-4">
-          {UPDATES.map((update) => (
+          {newUpdates.map((update) => (
             <div key={update.version}>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
                 {update.version}
@@ -110,6 +119,38 @@ export default function WhatsNewModal() {
             </div>
           ))}
         </div>
+
+        {/* Older updates — collapsible */}
+        {oldUpdates.length > 0 && (
+          <div className="px-6 pb-4 border-t border-border/50 pt-3">
+            <button
+              onClick={() => setOldOpen((o) => !o)}
+              className="w-full flex items-center justify-between text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <span>Older updates</span>
+              <span>{oldOpen ? "▲" : "▼"}</span>
+            </button>
+            {oldOpen && (
+              <div className="mt-3 space-y-4">
+                {oldUpdates.map((update) => (
+                  <div key={update.version}>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-2">
+                      {update.version}
+                    </p>
+                    <ul className="space-y-2">
+                      {update.items.map((item, i) => (
+                        <li key={i} className="flex gap-2 text-sm text-muted-foreground">
+                          <span className="text-foreground mt-0.5">•</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* CTA */}
         <div className="px-6 pb-6 pt-2">
