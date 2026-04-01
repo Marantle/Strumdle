@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, lazy, Suspense } from "react";
 import ChartHighway from "./components/ChartHighway";
 import GuessInput from "./components/GuessInput";
 import GuessList from "./components/GuessList";
 import type { GuessEntry } from "./components/GuessList";
-import ResultModal from "./components/ResultModal";
-import WelcomeModal from "./components/WelcomeModal";
-import WhatsNewModal from "./components/WhatsNewModal";
+const ResultModal = lazy(() => import("./components/ResultModal"));
+const WelcomeModal = lazy(() => import("./components/WelcomeModal"));
+const WhatsNewModal = lazy(() => import("./components/WhatsNewModal"));
 import AudioControls from "./components/AudioControls";
 import { Button } from "./components/ui/button";
 import { checkGuess, revealAnswer } from "./lib/guess/match";
@@ -92,6 +92,7 @@ export default function App() {
   );
   const [modalOpen, setModalOpen] = useState(initial.gameState === "done");
   const [showExtension, setShowExtension] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
   const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(
     () =>
@@ -108,12 +109,16 @@ export default function App() {
   const EXTENSION_PER_GUESS_MS = 2_000;
   const FULL_REPLAY_DURATION_MS =
     BASE_DURATION_MS + (challenge.maxGuesses * EXTENSION_PER_GUESS_MS);
-  const visibleDurationMs = solved
-    ? FULL_REPLAY_DURATION_MS
-    : BASE_DURATION_MS + (guesses.length * EXTENSION_PER_GUESS_MS);
+  const visibleDurationMs = useMemo(
+    () => solved ? FULL_REPLAY_DURATION_MS : BASE_DURATION_MS + (guesses.length * EXTENSION_PER_GUESS_MS),
+    [solved, FULL_REPLAY_DURATION_MS, guesses.length],
+  );
 
   // Filter notes to only show those within the visible duration
-  const visibleNotes = challenge.clip.notes.filter(note => note.timeMs < visibleDurationMs);
+  const visibleNotes = useMemo(
+    () => challenge.clip.notes.filter(note => note.timeMs < visibleDurationMs),
+    [challenge.clip.notes, visibleDurationMs],
+  );
 
   // Plain title strings for localStorage persistence
   const guessTitles = useMemo(() => guesses.map((g) => g.text), [guesses]);
@@ -172,6 +177,7 @@ export default function App() {
   const handleSkip = useCallback(() => {
     const newGuesses = [...guesses, { text: "-", artistMatch: false, gameMatch: false }];
     setGuesses(newGuesses);
+    setAnnouncement("Skipped.");
     if (newGuesses.length >= challenge.maxGuesses) {
       setGameState("done");
       reportStats(challenge.date, false, newGuesses.length);
@@ -197,13 +203,16 @@ export default function App() {
         setSolved(true);
         setSolvedOnAttempt(newGuesses.length);
         setGameState("done");
+        setAnnouncement("Correct!");
         reportStats(challenge.date, true, newGuesses.length);
         setTimeout(() => setModalOpen(true), 600);
       } else if (newGuesses.length >= challenge.maxGuesses) {
         setGameState("done");
+        setAnnouncement("Wrong. Game over.");
         reportStats(challenge.date, false, newGuesses.length);
         setTimeout(() => setModalOpen(true), 600);
       } else {
+        setAnnouncement(`Wrong. ${challenge.maxGuesses - newGuesses.length} attempts left.`);
         setShowExtension(true);
         setTimeout(() => setShowExtension(false), 2000);
       }
@@ -281,32 +290,37 @@ export default function App() {
         </Button>
       )}
 
+      {/* Screen reader announcements */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">{announcement}</div>
+
       {/* Welcome modal (first visit only) */}
-      <WelcomeModal />
+      <Suspense fallback={null}><WelcomeModal /></Suspense>
 
       {/* What's new modal (returning users, once per version) */}
-      <WhatsNewModal />
+      <Suspense fallback={null}><WhatsNewModal /></Suspense>
 
       {/* Result modal */}
       {isFinished && answer && modalOpen && (
-        <ResultModal
-          onClose={() => setModalOpen(false)}
-          onReplay={() => { setModalOpen(false); handlePlay(); }}
-          title={answer.title}
-          artist={answer.artist}
-          solved={solved}
-          replayDurationMs={FULL_REPLAY_DURATION_MS}
-          result={{
-            date: challenge.date,
-            guesses: guessTitles,
-            solved,
-            solvedOnAttempt,
-          }}
-          guessEntries={guesses}
-          challengeNumber={challenge.challengeNumber}
-          maxGuesses={challenge.maxGuesses}
-          nextChallengeAt={challenge.nextChallengeAt}
-        />
+        <Suspense fallback={null}>
+          <ResultModal
+            onClose={() => setModalOpen(false)}
+            onReplay={() => { setModalOpen(false); handlePlay(); }}
+            title={answer.title}
+            artist={answer.artist}
+            solved={solved}
+            replayDurationMs={FULL_REPLAY_DURATION_MS}
+            result={{
+              date: challenge.date,
+              guesses: guessTitles,
+              solved,
+              solvedOnAttempt,
+            }}
+            guessEntries={guesses}
+            challengeNumber={challenge.challengeNumber}
+            maxGuesses={challenge.maxGuesses}
+            nextChallengeAt={challenge.nextChallengeAt}
+          />
+        </Suspense>
       )}
     </div>
   );
