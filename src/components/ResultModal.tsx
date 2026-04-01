@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useChallengeContext } from "../context/ChallengeContext";
@@ -111,6 +111,54 @@ function getChallengeDate(n: number, baseN: number, baseDate: string): string {
   return d.toISOString().split("T")[0];
 }
 
+type ChallengeStatus = "solved" | "failed" | "in-progress" | null;
+
+function getSolvedColorClass(attempt: number | null | undefined): string {
+  switch (attempt) {
+    case 1: return "challenge-ace text-yellow-200 ring-1 ring-yellow-400/60";
+    case 2: return "bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35";
+    case 3: return "bg-green-500/20 text-green-400 hover:bg-green-500/30";
+    case 4: return "bg-teal-500/20 text-teal-400 hover:bg-teal-500/30";
+    case 5: return "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30";
+    case 6: return "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30";
+    default: return "bg-green-500/20 text-green-400 hover:bg-green-500/30";
+  }
+}
+
+function getChallengeColorClass(
+  status: ChallengeStatus,
+  solvedOnAttempt: number | null | undefined,
+): string {
+  if (status === "solved") return getSolvedColorClass(solvedOnAttempt);
+  if (status === "failed") return "bg-red-500/20 text-red-400 hover:bg-red-500/30";
+  return "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground";
+}
+
+function getGuessRowClass(status: "correct" | "wrong" | "empty"): string {
+  if (status === "correct") return "bg-green-500 text-white";
+  if (status === "wrong") return "bg-zinc-600 text-zinc-300";
+  return "bg-muted/40 border border-border/50";
+}
+
+type SavedChallenge = {
+  status: ChallengeStatus;
+  solvedOnAttempt: number | null | undefined;
+};
+
+function loadChallengeStatus(date: string): SavedChallenge {
+  try {
+    const s = localStorage.getItem(`daily-${date}`);
+    if (!s) return { status: null, solvedOnAttempt: undefined };
+    const parsed = JSON.parse(s) as { solved: boolean; guesses: string[]; solvedOnAttempt?: number | null };
+    if (parsed.solved) return { status: "solved", solvedOnAttempt: parsed.solvedOnAttempt };
+    if (parsed.guesses.length >= 6) return { status: "failed", solvedOnAttempt: null };
+    if (parsed.guesses.length > 0) return { status: "in-progress", solvedOnAttempt: null };
+    return { status: null, solvedOnAttempt: null };
+  } catch {
+    return { status: null, solvedOnAttempt: undefined };
+  }
+}
+
 const LEGEND_ITEMS = [
   { className: "challenge-ace ring-1 ring-yellow-400/60", label: "1st guess" },
   { className: "bg-emerald-500/25", label: "2nd guess" },
@@ -142,6 +190,17 @@ function PastChallengesGrid({ current, total, baseDate, onClose }: { current: nu
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [legendOpen]);
+
+  const challenges = useMemo(
+    () =>
+      Array.from({ length: total }, (_, i) => {
+        const n = i + 1;
+        const date = getChallengeDate(n, current, baseDate);
+        const { status, solvedOnAttempt } = loadChallengeStatus(date);
+        return { n, date, status, solvedOnAttempt };
+      }),
+    [total, current, baseDate],
+  );
 
   return (
     <div ref={gridRef} className="border-t border-border/50 pt-3">
@@ -176,23 +235,10 @@ function PastChallengesGrid({ current, total, baseDate, onClose }: { current: nu
       </div>
       {open && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {Array.from({ length: total }, (_, i) => i + 1).map((n) => {
+          {challenges.map(({ n, status, solvedOnAttempt }) => {
             const isCurrent = n === current;
-            const date = getChallengeDate(n, current, baseDate);
-            const saved = (() => {
-              try {
-                const s = localStorage.getItem(`daily-${date}`);
-                return s ? JSON.parse(s) as { solved: boolean; guesses: string[]; solvedOnAttempt?: number | null } : null;
-              } catch { return null; }
-            })();
-            let status: "solved" | "failed" | "in-progress" | null = null;
-            if (saved) {
-              if (saved.solved) status = "solved";
-              else if (saved.guesses.length >= 6) status = "failed";
-              else if (saved.guesses.length > 0) status = "in-progress";
-            }
-
             const baseClass = "w-9 h-9 flex items-center justify-center rounded-md text-xs font-bold transition-colors";
+
             if (isCurrent) {
               return (
                 <span key={n} data-testid={`challenge-${n}`} data-status="current" className={`${baseClass} bg-primary text-primary-foreground`}>
@@ -200,22 +246,8 @@ function PastChallengesGrid({ current, total, baseDate, onClose }: { current: nu
                 </span>
               );
             }
-            const solvedColorClass = (() => {
-              switch (saved?.solvedOnAttempt) {
-                case 1: return "challenge-ace text-yellow-200 ring-1 ring-yellow-400/60";
-                case 2: return "bg-emerald-500/25 text-emerald-300 hover:bg-emerald-500/35";
-                case 3: return "bg-green-500/20 text-green-400 hover:bg-green-500/30";
-                case 4: return "bg-teal-500/20 text-teal-400 hover:bg-teal-500/30";
-                case 5: return "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30";
-                case 6: return "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30";
-                default: return "bg-green-500/20 text-green-400 hover:bg-green-500/30";
-              }
-            })();
-            const colorClass = status === "solved"
-              ? solvedColorClass
-              : status === "failed"
-                ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                : "bg-muted text-muted-foreground hover:bg-muted/70 hover:text-foreground";
+
+            const colorClass = getChallengeColorClass(status, solvedOnAttempt);
             return (
               <Link key={n} data-testid={`challenge-${n}`} data-status={status ?? "unplayed"} to={n === total ? "/" : `/${n}`} onClick={onClose} className={`${baseClass} font-medium ${colorClass}`}>
                 #{n}
@@ -352,9 +384,9 @@ export default function ResultModal({
   };
 
   const guessRows = Array.from({ length: maxGuesses }, (_, i) => {
-    if (i >= result.guesses.length) return "empty";
-    if (result.solved && i === result.guesses.length - 1) return "correct";
-    return "wrong";
+    if (i >= result.guesses.length) return "empty" as const;
+    if (result.solved && i === result.guesses.length - 1) return "correct" as const;
+    return "wrong" as const;
   });
 
   const attemptDistribution = Array.from({ length: maxGuesses }, (_, i) => {
@@ -367,25 +399,32 @@ export default function ResultModal({
     ? `Replay Full ${Math.round(replayDurationMs / 1000)}s Clip`
     : "Replay Clip";
 
+  const shareLabel =
+    shareState === "shared" ? "Shared!" :
+    shareState === "copied" ? "Copied to clipboard!" :
+    "Share Result";
+
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-[opacity,background-color] duration-300 ${
         visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
       }`}
       onClick={onClose}
     >
       <div
         ref={scrollRef}
-        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-all duration-500 ${
-          visible
-            ? "opacity-100"
-            : "opacity-0"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="result-modal-title"
+        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-opacity duration-500 ${
+          visible ? "opacity-100" : "opacity-0"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={onClose}
+          aria-label="Close"
           className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted"
         >
           &times;
@@ -400,7 +439,7 @@ export default function ResultModal({
           }`}
         >
           <div className="text-4xl mb-2">{solved ? "\u{1F3B8}" : "\u{1F614}"}</div>
-          <h2 className="text-xl font-bold tracking-tight">
+          <h2 id="result-modal-title" className="text-xl font-bold tracking-tight">
             {solved ? "Nice one!" : "Better luck next time"}
           </h2>
           {solved && (
@@ -425,13 +464,7 @@ export default function ResultModal({
           {guessRows.map((status, i) => (
             <div
               key={i}
-              className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-all ${
-                status === "correct"
-                  ? "bg-green-500 text-white"
-                  : status === "wrong"
-                    ? "bg-zinc-600 text-zinc-300"
-                    : "bg-muted/40 border border-border/50"
-              }`}
+              className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold transition-[opacity] ${getGuessRowClass(status)}`}
               style={{
                 animationDelay: `${i * 80}ms`,
               }}
@@ -462,12 +495,12 @@ export default function ResultModal({
             <div className="space-y-1.5">
               {Array.from({ length: maxGuesses }, (_, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="w-4 h-3 rounded bg-muted/40 animate-pulse" />
-                  <div className="flex-1 h-5 rounded-sm bg-muted/40 animate-pulse" />
-                  <span className="w-5 h-3 rounded bg-muted/40 animate-pulse" />
+                  <span className="w-4 h-3 rounded bg-muted/40 animate-pulse motion-reduce:animate-none" />
+                  <div className="flex-1 h-5 rounded-sm bg-muted/40 animate-pulse motion-reduce:animate-none" />
+                  <span className="w-5 h-3 rounded bg-muted/40 animate-pulse motion-reduce:animate-none" />
                 </div>
               ))}
-              <p className="h-3 w-24 rounded bg-muted/40 animate-pulse mt-2" />
+              <p className="h-3 w-24 rounded bg-muted/40 animate-pulse motion-reduce:animate-none mt-2" />
             </div>
           ) : (
             <div className="space-y-1.5">
@@ -513,15 +546,11 @@ export default function ResultModal({
             className="w-full"
             size="lg"
           >
-            {shareState === "shared"
-              ? "Shared!"
-              : shareState === "copied"
-                ? "Copied to clipboard!"
-                : "Share Result"}
+            {shareLabel}
           </Button>
 
           {/* Countdown */}
-          {countdown && (
+          {countdown ? (
             <div className="text-center">
               {countdown === "00:00:00" ? (
                 <>
@@ -535,7 +564,7 @@ export default function ResultModal({
                 </>
               )}
             </div>
-          )}
+          ) : null}
 
           {/* Past challenges grid */}
           {latestChallengeNumber > 1 && <PastChallengesGrid current={challengeNumber} total={latestChallengeNumber} baseDate={result.date} onClose={onClose} />}
@@ -544,7 +573,7 @@ export default function ResultModal({
         {/* Scroll hint */}
         {hasScrollBelow && (
           <div className="sticky bottom-0 flex justify-center py-2 bg-gradient-to-t from-card to-transparent pointer-events-none">
-            <span className="animate-bounce text-lg text-muted-foreground">↓</span>
+            <span className="animate-bounce motion-reduce:animate-none text-lg text-muted-foreground">↓</span>
           </div>
         )}
       </div>
