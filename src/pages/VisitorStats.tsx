@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface DailyEntry {
   date: string;
@@ -159,6 +159,30 @@ export default function VisitorStats() {
       .catch(() => { setDayDetail(null); setLoadedDate(selectedDate); });
   }, [selectedDate]);
 
+  const { totalPlays, avgPerDay, solveRate, peakDay } = useMemo(() => {
+    const daily = data?.daily ?? [];
+    const plays = daily.reduce((s, d) => s + d.plays, 0);
+    const solves = daily.reduce((s, d) => s + d.solves, 0);
+    return {
+      totalPlays: plays,
+      avgPerDay: daily.length > 0 ? Math.round(plays / daily.length) : 0,
+      solveRate: plays > 0 ? ((solves / plays) * 100).toFixed(1) : "-",
+      peakDay: daily.reduce<DailyEntry | null>(
+        (best, d) => (!best || d.plays > best.plays ? d : best),
+        null,
+      ),
+    };
+  }, [data?.daily]);
+
+  // Build attempts chart data for selected day
+  const attemptsChartData = useMemo(
+    () => [1, 2, 3, 4, 5, 6].map((n) => ({
+      attempt: String(n),
+      count: dayDetail?.attempts?.[String(n)] ?? 0,
+    })),
+    [dayDetail],
+  );
+
   if (error) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
@@ -175,21 +199,6 @@ export default function VisitorStats() {
     );
   }
 
-  const totalPlays = data.daily.reduce((s, d) => s + d.plays, 0);
-  const totalSolves = data.daily.reduce((s, d) => s + d.solves, 0);
-  const avgPerDay = data.daily.length > 0 ? Math.round(totalPlays / data.daily.length) : 0;
-  const solveRate = totalPlays > 0 ? ((totalSolves / totalPlays) * 100).toFixed(1) : "-";
-  const peakDay = data.daily.reduce<DailyEntry | null>(
-    (best, d) => (!best || d.plays > best.plays ? d : best),
-    null,
-  );
-
-  // Build attempts chart data for selected day
-  const attemptsChartData = [1, 2, 3, 4, 5, 6].map((n) => ({
-    attempt: String(n),
-    count: dayDetail?.attempts?.[String(n)] ?? 0,
-  }));
-
   const daySolveRate = dayDetail && dayDetail.plays > 0
     ? ((dayDetail.solves / dayDetail.plays) * 100).toFixed(1)
     : "-";
@@ -202,6 +211,7 @@ export default function VisitorStats() {
       <div className="flex items-center gap-3 mb-4">
         <button
           onClick={() => setSelectedDate(addDays(selectedDate, -1))}
+          aria-label="Previous day"
           className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded text-sm text-zinc-300"
         >
           ←
@@ -216,6 +226,7 @@ export default function VisitorStats() {
         <button
           onClick={() => setSelectedDate(addDays(selectedDate, 1))}
           disabled={selectedDate >= todayUTC}
+          aria-label="Next day"
           className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 rounded text-sm text-zinc-300"
         >
           →
