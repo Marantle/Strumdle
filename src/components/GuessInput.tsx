@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useDeferredValue } from "react";
 import Fuse from "fuse.js";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -23,15 +23,17 @@ export default function GuessInput({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  const deferredValue = useDeferredValue(value);
+
   const fuse = useMemo(
     () => new Fuse(songList, { keys: ["title", "artist"], threshold: 0.4, distance: 100 }),
     [songList],
   );
 
   const suggestions = useMemo(() => {
-    if (value.trim().length < 1) return [];
-    return fuse.search(value, { limit: 6 }).map((r) => r.item);
-  }, [fuse, value]);
+    if (deferredValue.trim().length < 1) return [];
+    return fuse.search(deferredValue, { limit: 6 }).map((r) => r.item);
+  }, [fuse, deferredValue]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -83,11 +85,15 @@ export default function GuessInput({
     }
   };
 
+  const listboxOpen = showSuggestions && suggestions.length > 0 && !disabled;
+  const activeDescendant = selectedIndex >= 0 ? `suggestion-${selectedIndex}` : undefined;
+
   return (
     <div ref={wrapperRef} className="relative w-full max-w-md mx-auto">
       <form onSubmit={handleSubmit} className="flex gap-2">
         <Input
           type="text"
+          name="guess"
           placeholder={
             disabled
               ? "Game over"
@@ -103,6 +109,11 @@ export default function GuessInput({
           onKeyDown={handleKeyDown}
           disabled={disabled}
           autoComplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={listboxOpen}
+          aria-controls="guess-suggestions"
+          aria-activedescendant={activeDescendant}
           className="flex-1"
         />
         <Button type="submit" disabled={disabled} variant={canGuess ? "default" : "outline"}>
@@ -110,11 +121,18 @@ export default function GuessInput({
         </Button>
       </form>
 
-      {showSuggestions && suggestions.length > 0 && !disabled && (
-        <ul className="absolute z-50 bottom-full left-0 right-12 mb-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+      {listboxOpen && (
+        <ul
+          id="guess-suggestions"
+          role="listbox"
+          className="absolute z-50 bottom-full left-0 right-12 mb-1 bg-popover border border-border rounded-md shadow-lg overflow-hidden max-h-64 overflow-y-auto"
+        >
           {suggestions.map((song, i) => (
             <li
               key={`${song.title}-${song.artist}`}
+              id={`suggestion-${i}`}
+              role="option"
+              aria-selected={i === selectedIndex}
               className={`px-3 py-2 text-sm cursor-pointer ${
                 i === selectedIndex
                   ? "bg-accent text-accent-foreground"
