@@ -77,18 +77,22 @@ export default function WhatsNewModal() {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-[opacity,background-color] duration-300 ${visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
         }`}
       onClick={handleDismiss}
     >
       <div
-        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-all duration-500 ${visible ? "opacity-100" : "opacity-0"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="whats-new-modal-title"
+        className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-opacity duration-500 ${visible ? "opacity-100" : "opacity-0"
           }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
           onClick={handleDismiss}
+          aria-label="Close"
           className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted"
         >
           &times;
@@ -97,7 +101,7 @@ export default function WhatsNewModal() {
         {/* Header */}
         <div className="px-6 pt-8 pb-4 text-center">
           <div className="text-4xl mb-2">🆕</div>
-          <h2 className="text-xl font-bold tracking-tight">What&apos;s New</h2>
+          <h2 id="whats-new-modal-title" className="text-xl font-bold tracking-tight">What&apos;s New</h2>
           <p className="text-xs text-muted-foreground mt-1">Updates have happened</p>
         </div>
 
