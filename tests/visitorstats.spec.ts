@@ -86,7 +86,7 @@ test("clicking prev date loads previous day stats", async ({ page }) => {
 
   // Click prev day button
   const prevResponse = page.waitForResponse(/\/api\/analytics/);
-  await page.getByRole("button", { name: "←" }).click();
+  await page.getByRole("button", { name: "Previous day" }).click();
   await prevResponse;
 
   // Previous day: 80 plays, 60 solves → 75.0% solve rate, 10 archive plays
@@ -98,15 +98,15 @@ test("next date button is disabled when selected date is today", async ({ page }
   await setupMocks(page);
   await page.goto("/visitorstats");
 
-  await expect(page.getByRole("button", { name: "→" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Next day" })).toBeDisabled();
 });
 
 test("next date button enables after navigating to a past day", async ({ page }) => {
   await setupMocks(page);
   await page.goto("/visitorstats");
 
-  await page.getByRole("button", { name: "←" }).click();
-  await expect(page.getByRole("button", { name: "→" })).toBeEnabled();
+  await page.getByRole("button", { name: "Previous day" }).click();
+  await expect(page.getByRole("button", { name: "Next day" })).toBeEnabled();
 });
 
 test("archive plays chart section is visible", async ({ page }) => {

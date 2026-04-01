@@ -14,11 +14,11 @@ import { test, expect, type Page } from "@playwright/test";
 
 async function makeGuess(page: Page, text: string) {
   await page.getByPlaceholder(/Guess the song/).fill(text);
-  await page.getByRole("listitem").filter({ hasText: text }).first().dispatchEvent("click");
+  await page.getByRole("option").filter({ hasText: text }).first().dispatchEvent("click");
 }
 
 async function closeModal(page: Page) {
-  await page.getByRole("button", { name: "×" }).dispatchEvent("click");
+  await page.getByRole("button", { name: "Close" }).dispatchEvent("click");
 }
 
 async function openGrid(page: Page) {

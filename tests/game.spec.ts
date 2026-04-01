@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 async function makeGuess(page: Page, text: string) {
   await page.getByPlaceholder(/Guess the song/).fill(text);
-  await page.getByRole("listitem").filter({ hasText: text }).first().click();
+  await page.getByRole("option").filter({ hasText: text }).first().click();
 }
 
 // Run once per test, does NOT run again on page.reload()
@@ -61,7 +61,7 @@ test("solved state persists after reload", async ({ page }) => {
   await makeGuess(page, "Mock Song 1");
   await expect(page.getByText("Nice one!")).toBeVisible();
 
-  await page.getByRole("button", { name: "×" }).click();
+  await page.getByRole("button", { name: "Close" }).click();
   await page.reload();
   await expect(page.getByText("Nice one!")).toBeVisible();
   await expect(page.getByTestId("modal-song-title")).toHaveText("Mock Song 1");
