@@ -41,6 +41,7 @@
 }
 
 .dark {
+    color-scheme: dark;
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);
@@ -135,6 +136,13 @@
   box-shadow: 0 0 6px 1px oklch(0.88 0.20 88 / 0.4);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .challenge-ace {
+    animation: none;
+    background-position: center;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -144,5 +152,8 @@
     }
   html {
     @apply font-sans;
+    }
+  h1, h2 {
+    text-wrap: balance;
     }
 }
