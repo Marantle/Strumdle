@@ -159,7 +159,7 @@ function loadChallengeStatus(date: string): SavedChallenge {
   }
 }
 
-const LEGEND_ITEMS = [
+const LEGEND_CONTENT = [
   { className: "challenge-ace ring-1 ring-yellow-400/60", label: "1st guess" },
   { className: "bg-emerald-500/25", label: "2nd guess" },
   { className: "bg-green-500/20", label: "3rd guess" },
@@ -168,7 +168,12 @@ const LEGEND_ITEMS = [
   { className: "bg-orange-500/20", label: "6th guess" },
   { className: "bg-red-500/20", label: "Failed" },
   { className: "bg-muted", label: "Not played" },
-];
+].map(({ className, label }) => (
+  <div key={label} className="flex items-center gap-2">
+    <span className={`w-4 h-4 rounded-sm shrink-0 ${className}`} />
+    <span className="text-[11px] text-foreground/80">{label}</span>
+  </div>
+));
 
 function PastChallengesGrid({ current, total, baseDate, onClose }: { current: number; total: number; baseDate: string; onClose: () => void }) {
   const [open, setOpen] = useState(false);
@@ -223,12 +228,7 @@ function PastChallengesGrid({ current, total, baseDate, onClose }: { current: nu
           {legendOpen && (
             <div className="absolute right-0 bottom-7 z-10 w-36 rounded-lg border border-border bg-card shadow-lg p-2.5 flex flex-col gap-1.5">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Legend</p>
-              {LEGEND_ITEMS.map(({ className, label }) => (
-                <div key={label} className="flex items-center gap-2">
-                  <span className={`w-4 h-4 rounded-sm shrink-0 ${className}`} />
-                  <span className="text-[11px] text-foreground/80">{label}</span>
-                </div>
-              ))}
+              {LEGEND_CONTENT}
             </div>
           )}
         </div>
