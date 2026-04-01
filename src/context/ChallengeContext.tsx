@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, use } from "react";
 import type { DailyChallenge, SongListEntry } from "../types";
 
 interface ChallengeContextType {
@@ -10,7 +10,7 @@ interface ChallengeContextType {
 export const ChallengeContext = createContext<ChallengeContextType | null>(null);
 
 export function useChallengeContext(): ChallengeContextType {
-  const ctx = useContext(ChallengeContext);
+  const ctx = use(ChallengeContext);
   if (!ctx) throw new Error("useChallengeContext must be used within ChallengeContext.Provider");
   return ctx;
 }
