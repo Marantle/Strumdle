@@ -240,7 +240,6 @@ export default function App() {
         songStartMs={challenge.clipSongStartMs ?? 0}
         playing={isPlaying}
         onPlaybackComplete={handlePlaybackComplete}
-        audioEnabled={true}
       />
 
       {/* Audio Controls */}

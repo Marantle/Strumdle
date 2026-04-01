@@ -11,7 +11,6 @@ interface ChartHighwayProps {
   songStartMs?: number;
   playing: boolean;
   onPlaybackComplete: () => void;
-  audioEnabled?: boolean;
 }
 
 export default function ChartHighway({
@@ -20,7 +19,6 @@ export default function ChartHighway({
   songStartMs = 0,
   playing,
   onPlaybackComplete,
-  audioEnabled = true,
 }: ChartHighwayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<RendererState>({
@@ -30,7 +28,7 @@ export default function ChartHighway({
     startTime: null,
     rafId: null,
     playedNotes: new Set<string>(),
-    audioEnabled: audioEnabled,
+    audioEnabled: true,
   });
 
   // Keep notes and audio state in sync
@@ -38,8 +36,8 @@ export default function ChartHighway({
     stateRef.current.notes = notes;
     stateRef.current.clipDurationMs = clipDurationMs;
     stateRef.current.songStartMs = songStartMs;
-    stateRef.current.audioEnabled = audioEnabled && !audioManager.isMuted();
-  }, [notes, clipDurationMs, songStartMs, audioEnabled]);
+    stateRef.current.audioEnabled = !audioManager.isMuted();
+  }, [notes, clipDurationMs, songStartMs]);
 
   // Set canvas dimensions once on mount (resizing on every play causes expensive layout reflow)
   useEffect(() => {
@@ -123,8 +121,7 @@ export default function ChartHighway({
   return (
     <canvas
       ref={canvasRef}
-      className="w-full max-w-[300px] mx-auto block"
-      style={{ aspectRatio: "3 / 5" }}
+      className="w-full max-w-[300px] mx-auto block aspect-[3/5]"
     />
   );
 }

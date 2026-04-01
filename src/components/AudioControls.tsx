@@ -29,6 +29,19 @@ const LANE_DOT_CSS = [
   "bg-orange-500",
 ];
 
+// Static option elements — hoisted so they aren't recreated on every render
+const SOUND_OPTIONS = SOUND_CATALOG.map((s) => (
+  <option key={s.id} value={s.id}>
+    {s.name}: {s.description}
+  </option>
+));
+
+const SOUND_OPTIONS_SHORT = SOUND_CATALOG.map((s) => (
+  <option key={s.id} value={s.id}>
+    {s.name}
+  </option>
+));
+
 export default function AudioControls({ disabled = false }: AudioControlsProps) {
   const [muted, setMuted] = useState(audioManager.isMuted());
   const [expanded, setExpanded] = useState(false);
@@ -116,11 +129,7 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
               disabled={disabled}
             >
               <option value="">Choose a sound...</option>
-              {SOUND_CATALOG.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}: {s.description}
-                </option>
-              ))}
+              {SOUND_OPTIONS}
             </select>
           </div>
 
@@ -144,11 +153,7 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
                   onChange={(e) => handleLaneChange(lane, e.target.value as SoundId)}
                   disabled={disabled}
                 >
-                  {SOUND_CATALOG.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
+                  {SOUND_OPTIONS_SHORT}
                 </select>
                 <Button
                   variant="ghost"
@@ -156,7 +161,7 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
                   onClick={() => handlePreview(lane)}
                   disabled={disabled}
                   className="h-7 w-7 p-0 shrink-0"
-                  title={`Preview ${LANE_NAMES[lane]}`}
+                  aria-label={`Preview ${LANE_NAMES[lane]}`}
                 >
                   <Play className="h-3 w-3" />
                 </Button>
