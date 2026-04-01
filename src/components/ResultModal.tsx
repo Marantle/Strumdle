@@ -6,7 +6,6 @@ import type { DailyResult } from "../types";
 import type { GuessEntry } from "./GuessList";
 
 interface ResultModalProps {
-  open: boolean;
   onClose: () => void;
   onReplay: () => void;
   replayDurationMs?: number;
@@ -261,7 +260,6 @@ function PastChallengesGrid({ current, total, baseDate, onClose }: { current: nu
 }
 
 export default function ResultModal({
-  open,
   onClose,
   onReplay,
   replayDurationMs,
@@ -296,27 +294,18 @@ export default function ResultModal({
       el.removeEventListener("scroll", update);
       ro.disconnect();
     };
-  }, [open]);
+  }, []);
 
-  // Animate in
+  // Animate in on mount
   useEffect(() => {
-    let raf1: number, raf2: number;
-    if (open) {
-      raf1 = requestAnimationFrame(() => {
-        raf2 = requestAnimationFrame(() => setVisible(true));
-      });
-    } else {
-      raf1 = requestAnimationFrame(() => setVisible(false));
-    }
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-    };
-  }, [open]);
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(raf2);
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
-
     let cancelled = false;
 
     async function loadDailyStats() {
@@ -342,9 +331,7 @@ export default function ResultModal({
     return () => {
       cancelled = true;
     };
-  }, [open, result.date, maxGuesses]);
-
-  if (!open) return null;
+  }, [result.date, maxGuesses]);
 
   const handleShare = async () => {
     const text = generateShareText(result, guessEntries, challengeNumber, maxGuesses);

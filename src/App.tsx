@@ -288,9 +288,8 @@ export default function App() {
       <WhatsNewModal />
 
       {/* Result modal */}
-      {isFinished && answer && (
+      {isFinished && answer && modalOpen && (
         <ResultModal
-          open={modalOpen}
           onClose={() => setModalOpen(false)}
           onReplay={() => { setModalOpen(false); handlePlay(); }}
           title={answer.title}
