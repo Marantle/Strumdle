@@ -33,7 +33,9 @@ export default function WelcomeModal() {
     <div
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-[opacity,background-color] duration-300 ${visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
         }`}
-      onClick={handleDismiss}
+      role="presentation"
+      onClick={(e) => e.target === e.currentTarget && handleDismiss()}
+      onKeyDown={(e) => e.key === "Escape" && handleDismiss()}
     >
       <div
         role="dialog"
@@ -43,7 +45,6 @@ export default function WelcomeModal() {
             ? "opacity-100"
             : "opacity-0"
           }`}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button

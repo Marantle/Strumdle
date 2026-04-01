@@ -117,10 +117,11 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
         <>
           {/* Quick set all lanes */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <label htmlFor="set-all-lanes" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Set all lanes
             </label>
             <select
+              id="set-all-lanes"
               className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs"
               value=""
               onChange={(e) => {
@@ -135,9 +136,9 @@ export default function AudioControls({ disabled = false }: AudioControlsProps) 
 
           {/* Per-lane selectors */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Per-lane sounds
-            </label>
+            </p>
             {[0, 1, 2, 3, 4].map((lane) => (
               <div
                 key={lane}

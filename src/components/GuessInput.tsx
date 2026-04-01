@@ -139,6 +139,7 @@ export default function GuessInput({
                   : "hover:bg-accent/50"
               }`}
               onClick={() => submit(song.title)}
+              onKeyDown={(e) => e.key === "Enter" && submit(song.title)}
               onMouseEnter={() => setSelectedIndex(i)}
             >
               <span>{song.title}</span>

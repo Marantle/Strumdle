@@ -396,7 +396,9 @@ export default function ResultModal({
       className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-[opacity,background-color] duration-300 ${
         visible ? "bg-black/60 backdrop-blur-sm" : "bg-black/0"
       }`}
-      onClick={onClose}
+      role="presentation"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
     >
       <div
         ref={scrollRef}
@@ -406,7 +408,6 @@ export default function ResultModal({
         className={`relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm overflow-y-auto max-h-[90vh] transition-opacity duration-500 ${
           visible ? "opacity-100" : "opacity-0"
         }`}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <button
