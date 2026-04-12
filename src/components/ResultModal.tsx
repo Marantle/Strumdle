@@ -322,7 +322,8 @@ export default function ResultModal({
       url: window.location.origin,
     };
 
-    if (typeof navigator.share === "function") {
+    const isMobile = /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent)
+    if (isMobile && typeof navigator.share === "function") {
       try {
         await navigator.share(shareData);
         setShareState("shared");
