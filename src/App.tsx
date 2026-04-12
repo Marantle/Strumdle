@@ -67,11 +67,13 @@ function getInitialState(
   solvedOnAttempt: number | null;
 } {
   if (saved) {
-    const guesses = hydrateGuesses(saved.guesses, challenge, songList);
+    // Clamp in memory only — treat >maxGuesses as a failed game, no write-back
+    const rawTitles = saved.guesses.slice(0, challenge.maxGuesses);
+    const guesses = hydrateGuesses(rawTitles, challenge, songList);
     if (saved.solved) {
       return { gameState: "done", guesses, solved: true, solvedOnAttempt: saved.solvedOnAttempt };
     }
-    if (saved.guesses.length >= challenge.maxGuesses) {
+    if (rawTitles.length >= challenge.maxGuesses) {
       return { gameState: "done", guesses, solved: false, solvedOnAttempt: null };
     }
     return { gameState: "idle", guesses, solved: false, solvedOnAttempt: null };
@@ -162,12 +164,12 @@ export default function App() {
   }, []);
 
   const handleStop = useCallback(() => {
-    setGameState("idle");
-  }, []);
+    setGameState(isFinished ? "done" : "idle");
+  }, [isFinished]);
 
   const handlePlaybackComplete = useCallback(() => {
-    setGameState("idle");
-  }, []);
+    setGameState(isFinished ? "done" : "idle");
+  }, [isFinished]);
 
   const handleSkip = useCallback(() => {
     const newGuesses = [...guesses, { text: "-", artistMatch: false, gameMatch: false }];
@@ -268,7 +270,7 @@ export default function App() {
       <GuessInput
         onGuess={handleGuess}
         onSkip={handleSkip}
-        disabled={!canGuess || isPlaying}
+        disabled={!canGuess || isPlaying || isFinished}
         attemptsLeft={challenge.maxGuesses - guesses.length}
       />
 

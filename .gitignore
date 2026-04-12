@@ -24,6 +24,8 @@ guitar_sounds/
 
 # AI tool config
 .claude/
+.agents/
+skills-lock.json
 
 # Editor directories and files
 .vscode/*
