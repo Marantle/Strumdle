@@ -3,12 +3,19 @@ import { Button } from "./ui/button";
 
 // Bump this string whenever new features ship that returning users should know about.
 // Format: "YYYY-MM-DD" matching the deploy date.
-const CURRENT_VERSION = "2026-04-01";
+const CURRENT_VERSION = "2026-04-12";
 
 const WELCOME_KEY = "strumdle-welcome-seen";
 const SEEN_KEY = "strumdle-whats-new-seen";
 
 const UPDATES: { version: string; items: string[] }[] = [
+  {
+    version: "2026-04-12",
+    items: [
+      "Fixed Chrome on desktop share button opening a share dialog instead of copying a shareable text.",
+      "Fixed a bug that let you guess more than 6 times, such results are now treated as failures.",
+    ],
+  },
   {
     version: "2026-04-01",
     items: [
