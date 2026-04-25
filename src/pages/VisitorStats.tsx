@@ -118,11 +118,12 @@ function BarChart({
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 flex flex-col gap-1">
       <span className="text-xs text-zinc-500 uppercase tracking-wide">{label}</span>
       <span className="text-2xl font-bold text-zinc-100">{value}</span>
+      {sub && <span className="text-xs text-zinc-600">{sub}</span>}
     </div>
   );
 }
@@ -190,8 +191,9 @@ export default function VisitorStats() {
     count: dayDetail?.attempts?.[String(n)] ?? 0,
   }));
 
-  const daySolveRate = dayDetail && dayDetail.plays > 0
-    ? ((dayDetail.solves / dayDetail.plays) * 100).toFixed(1)
+  const dayLivePlays = dayDetail ? dayDetail.plays - (dayDetail.archivePlays ?? 0) : 0;
+  const daySolveRate = dayDetail && dayLivePlays > 0
+    ? ((dayDetail.solves / dayLivePlays) * 100).toFixed(1)
     : "-";
 
   return (
@@ -227,11 +229,11 @@ export default function VisitorStats() {
       {dayDetail && (
         <>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-4">
-            <StatCard label="Plays" value={dayDetail.plays.toLocaleString()} />
-            <StatCard label="Solves" value={dayDetail.solves.toLocaleString()} />
-            <StatCard label="Solve rate" value={`${daySolveRate}%`} />
-            <StatCard label="Archive plays" value={(dayDetail.archivePlays ?? 0).toLocaleString()} />
-            <StatCard label="First timers" value={(dayDetail.firstTimers ?? 0).toLocaleString()} />
+            <StatCard label="Live plays" value={dayLivePlays.toLocaleString()} sub="played on release day" />
+            <StatCard label="Archive plays" value={(dayDetail.archivePlays ?? 0).toLocaleString()} sub="played after release day" />
+            <StatCard label="Solves" value={dayDetail.solves.toLocaleString()} sub="across all plays" />
+            <StatCard label="Solve rate" value={`${daySolveRate}%`} sub="of live plays" />
+            <StatCard label="First timers" value={(dayDetail.firstTimers ?? 0).toLocaleString()} sub="new players on release day" />
           </div>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-8">
             <h2 className="text-sm font-semibold text-zinc-300 mb-3">Attempts distribution</h2>
@@ -270,7 +272,7 @@ export default function VisitorStats() {
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4">
         <h2 className="text-sm font-semibold text-zinc-300 mb-1">Archive plays (last 30 days)</h2>
-        <p className="text-xs text-zinc-600 mb-3">Plays of past challenges on each calendar day</p>
+        <p className="text-xs text-zinc-600 mb-3">People playing older challenges on that calendar day (not the daily)</p>
         <BarChart
           data={data.daily as unknown as Record<string, number | string>[]}
           labelKey="date"
