@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
+import { useRegisterSW } from "virtual:pwa-register/react";
 import ChartHighway from "./components/ChartHighway";
 import GuessInput from "./components/GuessInput";
 import GuessList from "./components/GuessList";
@@ -100,6 +101,9 @@ export default function App() {
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as Navigator & { standalone?: boolean }).standalone === true,
   );
+  // Show banner when the SW has detected a new deploy is available.
+  const { needRefresh: [swNeedsRefresh], updateServiceWorker } = useRegisterSW();
+  const newChallengeReady = swNeedsRefresh;
 
   const isPlaying = gameState === "playing";
   const isFinished = solved || guesses.length >= challenge.maxGuesses;
@@ -217,6 +221,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center px-4 py-8 gap-6">
+      {/* New challenge banner */}
+      {newChallengeReady && (
+        <button
+          onClick={() => updateServiceWorker(true)}
+          className="w-full max-w-md -mb-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-sm font-medium px-4 py-2.5 transition-colors"
+        >
+          New challenge available — tap to play
+        </button>
+      )}
+
       {/* Header */}
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight">Strumdle</h1>
