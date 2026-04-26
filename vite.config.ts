@@ -9,11 +9,12 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
       injectRegister: "auto",
       workbox: {
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/visitorstats/, /^\/challenges\//],
+        skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
       },
