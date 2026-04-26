@@ -64,7 +64,7 @@ test("day detail stat cards show plays, solves, solve rate and archive plays", a
   await page.goto("/visitorstats");
 
   // Wait for day detail to load
-  await expect(page.getByText("79.5%")).toBeVisible(); // day solve rate (93/117)
+  await expect(page.getByText("95.9%")).toBeVisible(); // day solve rate (93/97 live plays)
   await expect(page.getByText("20")).toBeVisible();    // archive plays
 });
 
@@ -82,15 +82,15 @@ test("clicking prev date loads previous day stats", async ({ page }) => {
   await page.goto("/visitorstats");
 
   // Wait for initial load
-  await expect(page.getByText("79.5%")).toBeVisible();
+  await expect(page.getByText("95.9%")).toBeVisible();
 
   // Click prev day button
   const prevResponse = page.waitForResponse(/\/api\/analytics/);
   await page.getByRole("button", { name: "←" }).click();
   await prevResponse;
 
-  // Previous day: 80 plays, 60 solves → 75.0% solve rate, 10 archive plays
-  await expect(page.getByText("75.0%")).toBeVisible();
+  // Previous day: 80 plays, 60 solves, 10 archive → 60/70 live plays = 85.7%
+  await expect(page.getByText("85.7%")).toBeVisible();
   await expect(page.getByText("10")).toBeVisible();
 });
 
